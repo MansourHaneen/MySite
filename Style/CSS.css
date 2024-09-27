@@ -139,6 +139,44 @@ section{
 
     
 
+.pdfs_div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 30px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 200px; /* Adjust width as needed */
+    padding: 20px;
+    margin: 15px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.icon img {
+    width: 80px;  /* Set proper width for the icon */
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.pdfName h3 {
+    font-size: 16px;
+    color: #333;
+    margin: 0;
+    padding-top: 10px;
+    text-decoration: none;
+}
+
 }
 .Info h2{
     color: #FE8925;
@@ -287,6 +325,13 @@ section{
     width: 13.98em;
 }
 
+.paper_div b {
+    color: #FE8925;
+}
+
+.pro_div b {
+    color: #FE8925;
+}
 
 .paperName {
     text-align: center;
@@ -406,6 +451,51 @@ section{
         font-size: 0px;
 
     }
+}
+.pdfs_div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 30px;
+}
+
+.pdf_card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 200px;
+    padding: 20px;
+    margin: 15px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+}
+
+.pdf_card:hover {
+    transform: scale(1.05);
+}
+
+.pdf_icon img {
+    width: 80px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.pdf_name {
+    font-size: 16px;
+    color: #333;
+    margin-top: 10px;
+}
+
+.pdf_name a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.pdf_name a:hover {
+    color: #ff5722;
 }
 
 
