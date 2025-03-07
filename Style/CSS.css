@@ -9,7 +9,6 @@
 
 }
 header{
-    background-color: #131414;
 
     width: 100%;
     position: fixed;
@@ -18,6 +17,12 @@ header{
     justify-content: space-between;
     align-items: center;
     padding: 10px 200px;
+
+
+    background: rgba(15, 15, 16, 0.1); 
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px);
+   
 }
 
 .head{
@@ -122,11 +127,11 @@ section{
 
 }
 .MyInfo{
-    background-color: #232525;
+    background-color: #18191b;
     width: 100%;
 }
 /*.how {
-    background-color: #232525;
+    background-color: #18191b;
     width: 100%;
     color: #ffffff;
     text-align: center;
@@ -221,7 +226,7 @@ section{
 
 
 .certs{
-    background-color: #131414;
+    background-color: #0f0f10;
     width: 100%;
 }
 
@@ -254,7 +259,7 @@ section{
 
 .card {
     text-decoration: none;
-    background-color: #232525;
+    background-color: #18191b;
     width: 21.25em;
     box-shadow: 0 5px 25px rgba(1 1 1 / 15%);
     border-radius: 10px;
@@ -290,7 +295,7 @@ section{
 
 .pro{
     margin-top: -3.5em;
-    background-color: #131414;
+    background-color: #0f0f10;
     width: 100%;
     
 }
@@ -314,7 +319,7 @@ section{
 
 .papers{
     margin-top: -3.5em;
-    background-color: #232525;
+    background-color: #18191b;
     width: 100%;
     
 }
@@ -327,7 +332,7 @@ section{
 
 }
 .paper_div .card {
-    background-color: #131414;
+    background-color: #0f0f10;
 }
 .paper_div .card .icon img {
     height: 17.5em;
@@ -353,7 +358,7 @@ section{
 
 
 .footer {
-    background-color: #131414;
+    background-color: #0f0f10;
     color: #FEFEFE;
     padding: 2em;
     display: flex;
@@ -424,7 +429,28 @@ section{
         font-size: 1.6em;
     }
 
-
+    header {
+        padding-top: env(safe-area-inset-top, 15px);
+    }
+    
+    /* Prevent White Margins in Safari */
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        overflow-x: hidden;
+    }
+    
+    /* Ensure Full-Width Header */
+    header {
+        width: 100vw;
+        min-width: 100%;
+    }
+    
+    /* Force Safari to Render Backdrop-Filter Properly */
+    header {
+        transform: translateZ(0);
+    }
 
 }
 
@@ -467,6 +493,28 @@ section{
 
         font-size: 0px;
 
+    }
+    header {
+        padding-top: env(safe-area-inset-top, 15px);
+    }
+    
+    /* Prevent White Margins in Safari */
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        overflow-x: hidden;
+    }
+    
+    /* Ensure Full-Width Header */
+    header {
+        width: 100vw;
+        min-width: 100%;
+    }
+    
+    /* Force Safari to Render Backdrop-Filter Properly */
+    header {
+        transform: translateZ(0);
     }
 }
 .pdfs_div {
