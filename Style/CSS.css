@@ -8,6 +8,11 @@
     scroll-behavior: smooth;
 
 }
+
+html, body {
+    background-color: #0f0f10; 
+}
+
 header{
 
     width: 100%;
@@ -23,6 +28,8 @@ header{
     backdrop-filter: blur(10px); 
     -webkit-backdrop-filter: blur(10px);
    
+
+    
 }
 
 .head{
@@ -429,28 +436,9 @@ section{
         font-size: 1.6em;
     }
 
-    header {
-        padding-top: env(safe-area-inset-top, 15px);
-    }
+
     
-    /* Prevent White Margins in Safari */
-    html, body {
-        margin: 0;
-        padding: 0;
-        width: 100vw;
-        overflow-x: hidden;
-    }
-    
-    /* Ensure Full-Width Header */
-    header {
-        width: 100vw;
-        min-width: 100%;
-    }
-    
-    /* Force Safari to Render Backdrop-Filter Properly */
-    header {
-        transform: translateZ(0);
-    }
+
 
 }
 
@@ -494,28 +482,9 @@ section{
         font-size: 0px;
 
     }
-    header {
-        padding-top: env(safe-area-inset-top, 15px);
-    }
+
     
-    /* Prevent White Margins in Safari */
-    html, body {
-        margin: 0;
-        padding: 0;
-        width: 100vw;
-        overflow-x: hidden;
-    }
     
-    /* Ensure Full-Width Header */
-    header {
-        width: 100vw;
-        min-width: 100%;
-    }
-    
-    /* Force Safari to Render Backdrop-Filter Properly */
-    header {
-        transform: translateZ(0);
-    }
 }
 .pdfs_div {
     display: flex;
