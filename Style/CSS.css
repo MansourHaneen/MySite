@@ -19,6 +19,7 @@ header{
     align-items: center;
     padding: 10px 200px;
 }
+
 .head{
     text-decoration: none;
     /*color:black;*/
@@ -42,7 +43,7 @@ section{
     padding: 100px 200px;
 }
 .main{
-    background: url(../img/Backg.png) no-repeat;
+    background: url(../img/Backg2.png) no-repeat;
     background-size: cover;
     background-position: center;
     /*background-attachment: fixed;
@@ -51,6 +52,8 @@ section{
     min-height: 100vh;
     display: flex;
     align-items: center;
+    justify-content: center;
+    
 
     
 }
@@ -84,27 +87,33 @@ section{
     margin-top: 10px;
     margin-bottom: 30px;
 }
-
-.main-b{
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 200px;
+}
+.main-b {
     color: #ffffff;
     background-color: #FE8925;
     text-decoration: none;
-    font-size: 1.1em;
+    font-size: 1.5em;
     font-weight: 600;
     display: inline-block;
-    padding: 0.9375em 2.1875em;
+    padding: 0.9375em 8.1875em;
     letter-spacing: 1px;
     border-radius: 15px;
     margin-bottom: 40px;
-    transition: 0.7s ease;
-}
-
-.main-b:hover{
+    transition: 0.3s ease-in-out;
+    box-shadow: 0 5px 0px #c76a1a;
     
-    transform: scale(1.1);
-
-
 }
+
+.main-b:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 0px #c76a1a;
+}
+
 
 .Social-Icons a{
     color: #ffffff;
@@ -367,6 +376,8 @@ section{
     padding: 0 12px 0 0;
 }
 
+
+
 @media (max-width:1023px){
     header{
         padding: 12px 20px;
@@ -382,7 +393,11 @@ section{
     
     }
 
+    .main-b {
 
+        font-size: 1.1em;
+        
+    }
     .title span{
         color: #ffffff;
         font-size: 1.8em;
