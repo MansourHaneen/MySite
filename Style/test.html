@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment & Loan Calculators</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f0f10;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto 30px;
+            background-color: #18191b;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #fff;
+        }
+
+        label {
+            font-size: 14px;
+            margin: 10px 0 5px;
+            display: block;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #2a2b2e;
+            color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #fe8925;
+            color: white;
+            border: none;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #fea925;
+        }
+
+        #results, #results2, #results3 {
+            margin-top: 20px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #ffb26e;
+        }
+
+        p {
+            font-size: 16px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        canvas {
+            margin-top: 20px;
+            background-color: #2a2b2e;
+            border-radius: 8px;
+            max-width: 100%;
+        }
+
+    </style>
+
+    <!-- Include Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Loan Interest Calculator</h1>
+        <label for="interest">Interest Rate (%):</label>
+        <input type="number" id="interest" placeholder="Enter Interest Rate" min="0" step="0.01">
+        
+        <label for="years">Number of Years:</label>
+        <input type="number" id="years" placeholder="Enter Number of Years" min="1" step="1">
+        
+        <label for="loan">Loan Amount:</label>
+        <input type="number" id="loan" placeholder="Enter Loan Amount" min="0" step="0.01">
+        
+        <button onclick="calculateLoan()">Calculate</button>
+        
+        <div id="results">
+            <p>What I Get: $<span id="loanAmount1">0.00</span></p>
+            <p>What I Should Pay: $<span id="totalValue1">0.00</span></p>
+            <p>What the Bank Will Take: $<span id="bankProfit1">0.00</span></p>
+            <p>The Amount I Should Pay Monthly: $<span id="monthlyPayment1">0.00</span></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Monthly Payment-Based Loan Calculator</h2>
+        <label for="desiredMonthlyPayment">Desired Monthly Payment ($):</label>
+        <input type="number" id="desiredMonthlyPayment" placeholder="Enter Desired Monthly Payment" min="0" step="0.01">
+        
+        <label for="interest2">Interest Rate (%):</label>
+        <input type="number" id="interest2" placeholder="Enter Interest Rate" min="0" step="0.01">
+        
+        <label for="years2">Number of Years:</label>
+        <input type="number" id="years2" placeholder="Enter Number of Years" min="1" step="1">
+        
+        <button onclick="calculateLoanAmount()">Calculate</button>
+        
+        <div id="results2">
+            <p>What I Get: $<span id="loanAmount2">0.00</span></p>
+            <p>What I Should Pay: $<span id="totalValue2">0.00</span></p>
+            <p>What the Bank Will Take: $<span id="bankProfit2">0.00</span></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Investment Calculator </br> Needs Fix</h2>
+        <label for="investmentAmount">Initial Investment ($):</label>
+        <input type="number" id="investmentAmount" placeholder="Enter Initial Investment" min="0" step="0.01">
+    
+        <label for="monthlyContribution">Monthly Contribution ($):</label>
+        <input type="number" id="monthlyContribution" placeholder="Enter Monthly Contribution" min="0" step="0.01">
+    
+        <label for="investmentRate">Annual Interest Rate (%):</label>
+        <input type="number" id="investmentRate" placeholder="Enter Interest Rate" min="0" step="0.01">
+    
+        <label for="investmentYears">Number of Years:</label>
+        <input type="number" id="investmentYears" placeholder="Enter Number of Years" min="1" step="1">
+    
+        <label for="compoundFrequency">Compounding Frequency:</label>
+        <select id="compoundFrequency">
+            <option value="1">Annually</option>
+            <option value="4">Quarterly</option>
+            <option value="12" selected>Monthly</option>
+            <option value="365">Daily</option>
+        </select>
+    
+        <button onclick="calculateInvestment()">Calculate</button>
+    
+        <div id="results3">
+            <p>Final Investment Value: $<span id="futureValue">0.00</span></p>
+            <p>Total Contributions: $<span id="totalContributions">0.00</span></p>
+            <p>Total Interest Earned: $<span id="investmentProfit">0.00</span></p>
+        </div>
+    
+        <canvas id="investmentChart" width="600" height="300"></canvas>
+    </div>
+
+    <script>
+        // Initialize chart variable
+        let investmentChartInstance = null;
+
+        function calculateLoan() {
+            const interestRate = parseFloat(document.getElementById("interest").value);
+            const years = parseFloat(document.getElementById("years").value);
+            const loanAmount = parseFloat(document.getElementById("loan").value);
+
+            if (isNaN(interestRate) || isNaN(years) || isNaN(loanAmount) || interestRate <= 0 || years <= 0 || loanAmount <= 0) {
+                alert("Please enter valid positive values.");
+                return;
+            }
+
+            const monthlyInterestRate = interestRate / 100 / 12;
+            const numberOfPayments = years * 12;
+
+            // Calculate monthly payment using the correct formula
+            const monthlyPayment = loanAmount * 
+                (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / 
+                (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
+
+            const totalValue = monthlyPayment * numberOfPayments;
+            const bankProfit = totalValue - loanAmount;
+
+            document.getElementById("loanAmount1").textContent = formatNumber(loanAmount.toFixed(2));
+            document.getElementById("totalValue1").textContent = formatNumber(totalValue.toFixed(2));            
+            document.getElementById("bankProfit1").textContent = formatNumber(bankProfit.toFixed(2));
+            document.getElementById("monthlyPayment1").textContent = formatNumber(monthlyPayment.toFixed(2));
+        }
+
+        function calculateLoanAmount() {
+            const desiredMonthlyPayment = parseFloat(document.getElementById("desiredMonthlyPayment").value);
+            const interestRate = parseFloat(document.getElementById("interest2").value);
+            const years = parseFloat(document.getElementById("years2").value);
+
+            if (isNaN(desiredMonthlyPayment) || isNaN(interestRate) || isNaN(years) || desiredMonthlyPayment <= 0 || interestRate <= 0 || years <= 0) {
+                alert("Please enter valid positive values.");
+                return;
+            }
+
+            const monthlyInterestRate = interestRate / 100 / 12;
+            const numberOfPayments = years * 12;
+
+            // Calculate loan amount using the correct formula
+            const loanAmount = desiredMonthlyPayment * 
+                (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1) / 
+                (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments));
+
+            const totalValue = desiredMonthlyPayment * numberOfPayments;
+            const bankProfit = totalValue - loanAmount;
+
+            document.getElementById("loanAmount2").textContent = formatNumber(loanAmount.toFixed(2));
+            document.getElementById("bankProfit2").textContent = formatNumber(bankProfit.toFixed(2));
+            document.getElementById("totalValue2").textContent = formatNumber(totalValue.toFixed(2));
+        }
+
+        function calculateInvestment() {
+            const investmentAmount = parseFloat(document.getElementById("investmentAmount").value) || 0;
+            const monthlyContribution = parseFloat(document.getElementById("monthlyContribution").value) || 0;
+            const investmentRate = parseFloat(document.getElementById("investmentRate").value);
+            const investmentYears = parseFloat(document.getElementById("investmentYears").value);
+            const compoundFrequency = parseInt(document.getElementById("compoundFrequency").value);
+
+            if (isNaN(investmentAmount) || isNaN(monthlyContribution) || isNaN(investmentRate) || isNaN(investmentYears) || 
+                investmentAmount < 0 || monthlyContribution < 0 || investmentRate <= 0 || investmentYears <= 0) {
+                alert("Please enter valid positive values.");
+                return;
+            }
+
+            const rate = investmentRate / 100 / compoundFrequency;
+            const totalPeriods = investmentYears * compoundFrequency;
+    
+            // Future Value of initial investment
+            let futureValue = investmentAmount * Math.pow(1 + rate, totalPeriods);
+    
+            let yearlyData = [];
+            let contributionsData = [];
+            let initialGrowthData = [];
+            
+            // Calculate future value with contributions
+            if (monthlyContribution > 0) {
+                // Adjust for monthly contributions when compounding frequency isn't monthly
+                const monthlyRate = investmentRate / 100 / 12;
+                futureValue = investmentAmount * Math.pow(1 + rate, totalPeriods);
+                
+                for (let i = 1; i <= investmentYears * 12; i++) {
+                    futureValue += monthlyContribution * Math.pow(1 + monthlyRate, investmentYears * 12 - i);
+                }
+                
+                // Calculate yearly data points
+                for (let year = 1; year <= investmentYears; year++) {
+                    let yearValue = investmentAmount * Math.pow(1 + rate, year * compoundFrequency);
+                    for (let month = 1; month <= year * 12; month++) {
+                        yearValue += monthlyContribution * Math.pow(1 + monthlyRate, year * 12 - month);
+                    }
+                    yearlyData.push(yearValue);
+                    contributionsData.push(investmentAmount + (monthlyContribution * year * 12));
+                    initialGrowthData.push(investmentAmount * Math.pow(1 + rate, year * compoundFrequency));
+                }
+            } else {
+                // No monthly contributions - simpler calculation
+                futureValue = investmentAmount * Math.pow(1 + rate, totalPeriods);
+                
+                for (let year = 1; year <= investmentYears; year++) {
+                    yearlyData.push(investmentAmount * Math.pow(1 + rate, year * compoundFrequency));
+                    contributionsData.push(investmentAmount);
+                    initialGrowthData.push(investmentAmount * Math.pow(1 + rate, year * compoundFrequency));
+                }
+            }
+    
+            const totalContributions = investmentAmount + (monthlyContribution * investmentYears * 12);
+            const investmentProfit = futureValue - totalContributions;
+    
+            document.getElementById("futureValue").textContent = formatNumber(futureValue.toFixed(2));
+            document.getElementById("totalContributions").textContent = formatNumber(totalContributions.toFixed(2));
+            document.getElementById("investmentProfit").textContent = formatNumber(investmentProfit.toFixed(2));
+    
+            drawChart(yearlyData, contributionsData, initialGrowthData, investmentYears);
+        }
+
+        function drawChart(yearlyData, contributionsData, initialGrowthData, years) {
+            const ctx = document.getElementById('investmentChart').getContext('2d');
+
+            // Destroy previous chart if it exists
+            if (investmentChartInstance) {
+                investmentChartInstance.destroy();
+            }
+
+            // Create new chart
+            investmentChartInstance = new Chart(ctx, {
+                type: 'line',  // Changed from bar to line for better trend visualization
+                data: {
+                    labels: Array.from({ length: years }, (_, i) => `Year ${i + 1}`),
+                    datasets: [
+                        {
+                            label: 'Total Investment Value',
+                            data: yearlyData,
+                            backgroundColor: 'rgba(254, 137, 37, 0.2)',
+                            borderColor: 'rgba(254, 137, 37, 1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Total Contributions',
+                            data: contributionsData,
+                            backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                            borderColor: 'rgba(0, 123, 255, 1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Initial Investment Growth',
+                            data: initialGrowthData,
+                            backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + formatNumber(value.toFixed(2));
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += '$' + formatNumber(context.raw.toFixed(2));
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('en-US').format(num);
+        }
+    </script>
+</body>
+
+</html>
