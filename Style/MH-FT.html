@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شجرة العائلة التفاعلية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0; /* Adjust padding to allow full width for tree */
+            display: flex;
+            flex-direction: column; /* Stack header, tree, and notes vertically */
+            align-items: center; /* Center content horizontally */
+            min-height: 100vh;
+            direction: rtl; /* Set global direction to RTL for text */
+            text-align: right; /* Align text to the right */
+            color: #333;
+            overflow-x: hidden; /* Prevent horizontal scroll on body unless necessary for tree */
+            overflow-y: auto; /* Allow vertical scrolling for the whole page */
+        }
+
+        /* Header Styling - Mimicking OSINT Framework */
+        #header {
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #header hr {
+            border: none;
+            border-top: 1px solid #555;
+            margin: 10px auto 0;
+            width: 80%;
+        }
+
+        /* Main content area for the tree */
+        #tree-container {
+            flex-grow: 1; /* Allow container to take available vertical space */
+            width: 100%;
+            max-width: 100%; /* Ensure it doesn't overflow */
+            background-color: #ffffff;
+            border-radius: 0 0 12px 12px; /* Rounded bottom corners */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 20px; /* Space below header */
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: auto; /* Enable scrolling for the tree itself */
+            display: flex;
+            justify-content: center; /* Center SVG content */
+            align-items: flex-start; /* Align SVG content to top */
+            min-height: 400px; /* Minimum height for the tree area */
+        }
+
+        /* SVG styling for D3 tree */
+        .node circle {
+            fill: #e8f0fe; /* Node background color */
+            stroke: #cce0ff; /* Node border color */
+            stroke-width: 1.5px;
+            cursor: pointer;
+        }
+
+        .node text {
+            font-size: 0.9em;
+            font-weight: 600;
+            text-anchor: middle; /* Center text horizontally */
+            fill: #333;
+            pointer-events: none; /* Allow click to pass through text to circle */
+            direction: rtl; /* Ensure RTL for text within SVG */
+            unicode-bidi: embed; /* Handle complex bidirectional text */
+        }
+
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 1.5px;
+        }
+
+        /* Notes and Footer Styling */
+        .notes-section {
+            width: 80%;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            box-sizing: border-box;
+            text-align: right; /* Align text to the right for RTL */
+        }
+
+        .notes-section h3 {
+            color: #4a90e2;
+            margin-top: 0;
+            font-size: 1.4em;
+        }
+
+        .notes-section p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .notes-section a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+
+        .notes-section a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer Styling (New) */
+        .footer-section {
+            width: 100%;
+            padding: 20px;
+            margin-top: 30px;
+            background-color: #333;
+            color: #f0f2f5;
+            text-align: center;
+            font-size: 0.9em;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer-section a {
+            color: #7bbaff; /* Lighter blue for links */
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-section a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        شجرة عائلة آل حنين
+        <hr/>
+    </div>
+    
+    <div id="tree-container">
+        </div>
+
+    <div class="notes-section">
+        <h3>ملاحظات</h3>
+        <p>
+            يُرجى العلم بأن هذه الشجرة ليست مكتملة بعد، وسيتم العمل على إكمالها.
+        </p>
+        
+    </div>
+
+    <footer class="footer-section">
+        <p>&copy; 2025 شجرة العائلة التفاعلية. جميع الحقوق محفوظة. تم إنشاؤها بواسطة
+        <a href="/index.html" class="internal-node-link" >منصور عبده علي حنين</a>.</p>
+    </footer>
+    <script>
+        // Define the family tree data structure
+        const familyData = {
+            name: "شوعي احمد حنين",
+            children: [
+                {
+                    name: "علي",
+                    children: [
+                        {
+                            name: "عباس",
+                            children: [
+                                { 
+                                    name: "علي", // Corrected: Added comma here
+                                    children: [
+                                        { name: "هتان" }
+                                    ]
+                                },
+                                { name: "عبد الرحمن" },
+                                { name: "احمد" },
+                                { name: "شروق" },
+                                { name: "نجود" }
+                            ]
+                        },
+                        {
+                            name: "عبده",
+                            children: [
+                                { 
+                                    name: "علي", // Corrected: Added comma here
+                                    children: [
+                                        { name: "اليزيد" },
+                                        { name: "الوليد" },
+                                        { name: "منصور" }
+                                    ]
+                                },
+                                { name: "منصور" }, 
+                                { name: "رقية" },
+                                { name: "فجر" },
+                                { name: "جنى" },
+                                { name: "بدر" },
+                                { name: "بندر" }
+                            ]
+                        },
+                        {
+                            name: "محمد",
+                            children: [
+                                { name: "فراس" },
+                                { name: "حمزة" }, 
+                                { name: "سارة" },
+                                { name: "يارا" }
+                            ]
+                        },
+                        {
+                            name: "منصور",
+                            children: [
+                                { name: "رناس" },
+                                { name: "عبد الرحمن" }
+                            ]
+                        },
+                        { name: "نعمه" },
+                        { name: "ريم" }
+                    ]
+                },
+                { name: "عباس" },
+                { name: "حليمة" },
+                { name: "فاطمة" },
+                { name: "عيشة" },
+                { name: "كنان" }
+            ]
+        };
+
+        // Function to recursively reverse children arrays for right-to-left display
+        function reverseChildrenOrder(node) {
+            if (node.children) {
+                node.children.reverse();
+                node.children.forEach(reverseChildrenOrder);
+            }
+            if (node._children) { // Also check for collapsed children
+                node._children.reverse();
+                node._children.forEach(reverseChildrenOrder);
+            }
+        }
+
+        // Apply the reversal to the entire familyData
+        reverseChildrenOrder(familyData);
+
+        // Set up the D3.js tree layout
+        const margin = { top: 60, right: 160, bottom: 60, left: 160 };
+        let width = 1260 - margin.right - margin.left;
+        let height = 1100 - margin.top - margin.bottom;
+
+        let i = 0; // Global node counter for unique IDs
+        let duration = 750; // Animation duration
+
+        // Create a tree layout
+        const tree = d3.layout.tree()
+            .size([width, height]); // D3 v3 tree layout expects [width, height]
+
+        // Create a diagonal path generator for links
+        const diagonal = d3.svg.diagonal()
+            .projection(function(d) { return [d.x, d.y]; }); // For top-to-bottom, x is horizontal, y is vertical
+
+        // Select the container and append SVG
+        const svg = d3.select("#tree-container").append("svg")
+            .attr("width", width + margin.right + margin.left)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        let root; // Declare root globally
+
+        // Helper to find a node by name and expand its path
+        function findNodeAndExpandPath(rootNode, targetName) {
+            let foundNode = null;
+
+            function search(node) {
+                if (node.name === targetName) {
+                    foundNode = node;
+                    return true; // Found the target node
+                }
+                if (node._children) { // If it has collapsed children
+                    // Temporarily expand to search deeper
+                    node.children = node._children;
+                    node._children = null;
+                }
+                if (node.children) {
+                    for (let i = 0; i < node.children.length; i++) {
+                        if (search(node.children[i])) {
+                            return true; // Target found in this branch
+                        }
+                    }
+                }
+                return false; // Target not in this branch
+            }
+
+            search(rootNode); // Start search from the root
+            return foundNode;
+        }
+
+        // Function to scroll to a specific node
+        function scrollToNode(nodeElementId) {
+            const targetG = d3.select("#" + nodeElementId);
+            if (targetG.empty()) {
+                console.warn("Target node element not found:", nodeElementId);
+                return;
+            }
+
+            const treeContainer = document.getElementById('tree-container');
+            const nodeRect = targetG.node().getBoundingClientRect();
+            const containerRect = treeContainer.getBoundingClientRect();
+
+            // Calculate scroll position to center the node
+            const scrollX = nodeRect.left - containerRect.left + treeContainer.scrollLeft - (containerRect.width / 2) + (nodeRect.width / 2);
+            const scrollY = nodeRect.top - containerRect.top + treeContainer.scrollTop - (containerRect.height / 2) + (nodeRect.height / 2);
+
+            treeContainer.scrollTo({
+                left: scrollX,
+                top: scrollY,
+                behavior: 'smooth'
+            });
+        }
+
+        // Function to update the tree
+        function update(source) {
+            // Compute the new tree layout.
+            const nodes = tree.nodes(root).reverse();
+            const links = tree.links(nodes);
+
+            // Normalize for fixed-depth.
+            nodes.forEach(function(d) { d.y = d.depth * 180; }); // Adjust depth spacing
+
+            // Update the nodes…
+            const node = svg.selectAll("g.node")
+                .data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+            // Enter any new nodes at the parent's previous position.
+            const nodeEnter = node.enter().append("g")
+                .attr("class", "node")
+                .attr("id", function(d) { return "node-" + d.id; }) // ADDED ID ATTRIBUTE HERE
+                .attr("transform", function(d) {
+                    return "translate(" + source.x0 + "," + source.y0 + ")";
+                })
+                .on("click", click);
+
+            nodeEnter.append("circle")
+                .attr("r", 1e-6)
+                .style("fill", function(d) { return d._children ? "#e8f0fe" : "#fff"; });
+
+            nodeEnter.append("text")
+                .attr("y", function(d) {
+                    return d.children || d._children ? -18 : 18; // Position text above or below node
+                })
+                .attr("dy", ".35em")
+                .attr("text-anchor", "middle")
+                .text(function(d) { return d.name; })
+                .style("fill-opacity", 1e-6);
+
+            // Transition nodes to their new position.
+            const nodeUpdate = node.transition()
+                .duration(duration)
+                .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+            nodeUpdate.select("circle")
+                .attr("r", 8)
+                .style("fill", function(d) { return d._children ? "#e8f0fe" : "#fff"; });
+
+            nodeUpdate.select("text")
+                .style("fill-opacity", 1);
+
+            // Transition exiting nodes to the parent's new position.
+            const nodeExit = node.exit().transition()
+                .duration(duration)
+                .attr("transform", function(d) { return "translate(" + source.x + "," + source.y + ")"; })
+                .remove();
+
+            nodeExit.select("circle")
+                .attr("r", 1e-6);
+
+            nodeExit.select("text")
+                .style("fill-opacity", 1e-6);
+
+            // Update the links…
+            const link = svg.selectAll("path.link")
+                .data(links, function(d) { return d.target.id; });
+
+            // Enter any new links at the parent's previous position.
+            link.enter().insert("path", "g")
+                .attr("class", "link")
+                .attr("d", function(d) {
+                    const o = { x: source.x0, y: source.y0 };
+                    return diagonal({ source: o, target: o });
+                });
+
+            // Transition links to their new position.
+            link.transition()
+                .duration(duration)
+                .attr("d", diagonal);
+
+            // Transition exiting links to the parent's new position.
+            link.exit().transition()
+                .duration(duration)
+                .attr("d", function(d) {
+                    const o = { x: source.x, y: source.y };
+                    return diagonal({ source: o, target: o });
+                })
+                .remove();
+
+            // Stash the old positions for transition.
+            nodes.forEach(function(d) {
+                d.x0 = d.x;
+                d.y0 = d.y;
+            });
+        }
+
+        // Toggle children on click.
+        function click(d) {
+            if (d.children) {
+                d._children = d.children;
+                d.children = null;
+            } else {
+                d.children = d._children;
+                d._children = null;
+            }
+            update(d);
+        }
+
+        // Initialize the tree
+        window.onload = function() {
+            root = familyData;
+            root.x0 = width / 2; // Initial x position for root
+            root.y0 = 0; // Initial y position for root
+
+            // Collapse all children initially except the first level
+            function collapse(d) {
+                if (d.children) {
+                    d._children = d.children;
+                    d._children.forEach(collapse);
+                    d.children = null;
+                }
+            }
+
+            // Collapse all nodes except the root and its direct children
+            root.children.forEach(collapse);
+
+            update(root); // Draw the tree
+
+            document.querySelector('.internal-node-link').addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                const targetNodeName = this.dataset.targetNode; // Get the target name from data attribute
+
+                // Find the node and ensure its path is expanded
+                const targetNode = findNodeAndExpandPath(root, targetNodeName);
+
+                if (targetNode) {
+                    // Update the tree to reflect expansions
+                    update(root);
+
+                    // Scroll to the node after the transition completes
+                    setTimeout(() => {
+                        scrollToNode("node-" + targetNode.id);
+                    }, duration + 50); // A bit longer than the D3 transition duration
+                } else {
+                    console.warn("Node '" + targetNodeName + "' not found in the tree data.");
+                }
+            });
+        };
+
+        // Resize function to make the SVG responsive
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('tree-container');
+            width = container.clientWidth - margin.right - margin.left;
+            height = container.clientHeight - margin.top - margin.bottom;
+
+            tree.size([width, height]);
+
+            // Update SVG dimensions
+            d3.select("#tree-container svg")
+                .attr("width", width + margin.right + margin.left)
+                .attr("height", height + margin.top + margin.bottom);
+
+            // Recalculate and redraw the tree
+            update(root);
+        });
+    </script>
+</body>
+</html>
