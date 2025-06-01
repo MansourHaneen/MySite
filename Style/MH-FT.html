@@ -165,72 +165,93 @@
     <script>
         // Define the family tree data structure
         const familyData = {
-            name: "شوعي احمد حنين",
+    name: "حنين",
+    children: [
+        {
+            name: "عيسى",
             children: [
                 {
-                    name: "علي",
+                    name: "عثمان",
                     children: [
                         {
-                            name: "عباس",
+                            name: "احمد",
                             children: [
-                                { 
-                                    name: "علي",
+                                {
+                                    name: "شوعي",
                                     children: [
-                                        { name: "هتان" }
+                                        {
+                                            name: "علي",
+                                            children: [
+                                                {
+                                                    name: "عباس",
+                                                    children: [
+                                                        { 
+                                                            name: "علي",
+                                                            children: [
+                                                                { name: "هتان" }
+                                                            ]
+                                                        },
+                                                        { name: "عبد الرحمن" },
+                                                        { name: "احمد" },
+                                                        { name: "شروق" },
+                                                        { name: "نجوى" }
+                                                    ]
+                                                },
+                                                {
+                                                    name: "عبده",
+                                                    children: [
+                                                        { 
+                                                            name: "علي",
+                                                            children: [
+                                                                { name: "يزيد" },
+                                                                { name: "الوليد" },
+                                                                { name: "منصور" }
+                                                            ]
+                                                        },
+                                                        { name: "منصور" }, 
+                                                        { name: "رقية" },
+                                                        { name: "فجر" },
+                                                        { name: "جنى" },
+                                                        { name: "بدر" },
+                                                        { name: "بندر" }
+                                                    ]
+                                                },
+                                                {
+                                                    name: "محمد",
+                                                    children: [
+                                                        { name: "فراس" },
+                                                        { name: "حمزة" }, 
+                                                        { name: "سارة" },
+                                                        { name: "يارا" }
+                                                    ]
+                                                },
+                                                {
+                                                    name: "منصور",
+                                                    children: [
+                                                        { name: "رناس" },
+                                                        { name: "عبد الرحمن" }
+                                                    ]
+                                                },
+                                                { name: "نعمه" },
+                                                { name: "ريم" }
+                                            ]
+                                        },
+                                        { name: "عباس" },
+                                        { name: "حليمة" },
+                                        { name: "فاطمة" },
+                                        { name: "عيشة" },
+                                        { name: "كنان" }
                                     ]
-                                },
-                                { name: "عبد الرحمن" },
-                                { name: "احمد" },
-                                { name: "شروق" },
-                                { name: "نجوى" }
+                                }
                             ]
-                        },
-                        {
-                            name: "عبده",
-                            children: [
-                                { 
-                                    name: "علي",
-                                    children: [
-                                        { name: "يزيد" },
-                                        { name: "الوليد" },
-                                        { name: "منصور" }
-                                    ]
-                                },
-                                { name: "منصور" }, 
-                                { name: "رقية" },
-                                { name: "فجر" },
-                                { name: "جنى" },
-                                { name: "بدر" },
-                                { name: "بندر" }
-                            ]
-                        },
-                        {
-                            name: "محمد",
-                            children: [
-                                { name: "فراس" },
-                                { name: "حمزة" }, 
-                                { name: "سارة" },
-                                { name: "يارا" }
-                            ]
-                        },
-                        {
-                            name: "منصور",
-                            children: [
-                                { name: "رناس" },
-                                { name: "عبد الرحمن" }
-                            ]
-                        },
-                        { name: "نعمه" },
-                        { name: "ريم" }
+                        }
                     ]
-                },
-                { name: "عباس" },
-                { name: "حليمة" },
-                { name: "فاطمة" },
-                { name: "عيشة" },
-                { name: "كنان" }
+                }
             ]
-        };
+        }
+    ]
+};
+
 
         let i = 0; // Global node counter for unique IDs
         let duration = 750; // Animation duration
