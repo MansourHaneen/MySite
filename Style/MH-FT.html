@@ -12,16 +12,16 @@
             font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
             background-color: #f0f2f5;
             margin: 0;
-            padding: 0; /* Adjust padding to allow full width for tree */
+            padding: 0;
             display: flex;
-            flex-direction: column; /* Stack header, tree, and notes vertically */
-            align-items: center; /* Center content horizontally */
+            flex-direction: column;
+            align-items: center;
             min-height: 100vh;
-            direction: rtl; /* Set global direction to RTL for text */
-            text-align: right; /* Align text to the right */
+            direction: rtl;
+            text-align: right;
             color: #333;
-            overflow-x: hidden; /* Prevent horizontal scroll on body unless necessary for tree */
-            overflow-y: auto; /* Allow vertical scrolling for the whole page */
+            overflow-x: hidden; /* Prevent body horizontal scroll */
+            overflow-y: auto;
         }
 
         /* Header Styling - Mimicking OSINT Framework */
@@ -45,26 +45,27 @@
 
         /* Main content area for the tree */
         #tree-container {
-            flex-grow: 1; /* Allow container to take available vertical space */
+            flex-grow: 1;
             width: 100%;
-            max-width: 100%; /* Ensure it doesn't overflow */
+            max-width: 100%;
             background-color: #ffffff;
-            border-radius: 0 0 12px 12px; /* Rounded bottom corners */
+            border-radius: 0 0 12px 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            margin-top: 20px; /* Space below header */
-            padding: 20px;
+            margin-top: 20px;
+            margin-right: 20px;
+            padding: 0px; /* Padding for the container */
             box-sizing: border-box;
-            overflow: auto; /* Enable scrolling for the tree itself */
+            overflow: auto; /* Allow scrolling for the tree itself */
             display: flex;
-            justify-content: center; /* Center SVG content */
+            justify-content: center; /* Center SVG content initially */
             align-items: flex-start; /* Align SVG content to top */
-            min-height: 400px; /* Minimum height for the tree area */
+            min-height: 400px;
         }
 
         /* SVG styling for D3 tree */
         .node circle {
-            fill: #e8f0fe; /* Node background color */
-            stroke: #cce0ff; /* Node border color */
+            fill: #e8f0fe;
+            stroke: #cce0ff;
             stroke-width: 1.5px;
             cursor: pointer;
         }
@@ -72,10 +73,9 @@
         .node text {
             font-size: 0.9em;
             font-weight: 600;
-            text-anchor: middle; /* Center text horizontally */
             fill: #333;
-            pointer-events: none; /* Allow click to pass through text to circle */
-            direction: rtl; /* Ensure RTL for text within SVG */
+            pointer-events: none;
+            direction: rtl; /* Important for Arabic text */
             unicode-bidi: embed; /* Handle complex bidirectional text */
         }
 
@@ -95,7 +95,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             box-sizing: border-box;
-            text-align: right; /* Align text to the right for RTL */
+            text-align: right;
         }
 
         .notes-section h3 {
@@ -118,7 +118,7 @@
             text-decoration: underline;
         }
 
-        /* Footer Styling (New) */
+        /* Footer Styling */
         .footer-section {
             width: 100%;
             padding: 20px;
@@ -131,7 +131,7 @@
         }
 
         .footer-section a {
-            color: #7bbaff; /* Lighter blue for links */
+            color: #7bbaff;
             text-decoration: none;
             font-weight: 600;
         }
@@ -148,7 +148,7 @@
     </div>
     
     <div id="tree-container">
-        </div>
+    </div>
 
     <div class="notes-section">
         <h3>ملاحظات</h3>
@@ -160,7 +160,7 @@
 
     <footer class="footer-section">
         <p>&copy; 2025 شجرة العائلة التفاعلية. جميع الحقوق محفوظة. تم إنشاؤها بواسطة
-        <a href="/index.html" class="internal-node-link" >منصور عبده علي حنين</a>.</p>
+        <a href="#" class="internal-node-link" data-target-node="منصور عبده علي حنين">منصور عبده علي حنين</a>.</p>
     </footer>
     <script>
         // Define the family tree data structure
@@ -174,7 +174,7 @@
                             name: "عباس",
                             children: [
                                 { 
-                                    name: "علي", // Corrected: Added comma here
+                                    name: "علي",
                                     children: [
                                         { name: "هتان" }
                                     ]
@@ -189,7 +189,7 @@
                             name: "عبده",
                             children: [
                                 { 
-                                    name: "علي", // Corrected: Added comma here
+                                    name: "علي",
                                     children: [
                                         { name: "اليزيد" },
                                         { name: "الوليد" },
@@ -232,71 +232,131 @@
             ]
         };
 
-        // Function to recursively reverse children arrays for right-to-left display
-        function reverseChildrenOrder(node) {
-            if (node.children) {
-                node.children.reverse();
-                node.children.forEach(reverseChildrenOrder);
-            }
-            if (node._children) { // Also check for collapsed children
-                node._children.reverse();
-                node._children.forEach(reverseChildrenOrder);
-            }
-        }
-
-        // Apply the reversal to the entire familyData
-        reverseChildrenOrder(familyData);
-
-        // Set up the D3.js tree layout
-        const margin = { top: 60, right: 160, bottom: 60, left: 160 };
-        let width = 1260 - margin.right - margin.left;
-        let height = 1100 - margin.top - margin.bottom;
-
         let i = 0; // Global node counter for unique IDs
         let duration = 750; // Animation duration
 
-        // Create a tree layout
-        const tree = d3.layout.tree()
-            .size([width, height]); // D3 v3 tree layout expects [width, height]
+        let tree, diagonal, svg, root; // Declare globally
+        let currentMargin = { top: 60, right: 0, bottom: 60, left: 0 }; // Global variable to store calculated margins
+        const textRotationAngle = -35; 
 
-        // Create a diagonal path generator for links
-        const diagonal = d3.svg.diagonal()
-            .projection(function(d) { return [d.x, d.y]; }); // For top-to-bottom, x is horizontal, y is vertical
+        // Function to initialize or re-initialize D3 elements based on container size
+        function initializeD3() {
+            const container = document.getElementById('tree-container');
+            const screenWidth = window.innerWidth;
 
-        // Select the container and append SVG
-        const svg = d3.select("#tree-container").append("svg")
-            .attr("width", width + margin.right + margin.left)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            // Define dynamic margins based on screen width
+            // These margins are *inside* the SVG, not the tree-container
+            if (screenWidth > 1200) { // Large screens (desktops)
+                currentMargin.right = 160;
+                currentMargin.left = 160;
+            } else if (screenWidth > 768) { // Medium screens (tablets)
+                currentMargin.right = 80;
+                currentMargin.left = 80;
+            } else { // Small screens (phones)
+                currentMargin.right = 20; 
+                currentMargin.left = 20;  
+            }
 
-        let root; // Declare root globally
+            // Use clientWidth and clientHeight for the actual visible area of the tree-container
+            // We subtract the internal SVG margins from the container's available space
+            let availableWidthForLayout = container.clientWidth - currentMargin.left - currentMargin.right;
+            let availableHeightForLayout = container.clientHeight - currentMargin.top - currentMargin.bottom;
+
+            // Ensure minimum dimensions for the D3 layout to prevent collapse
+            availableWidthForLayout = Math.max(availableWidthForLayout, 400); 
+            availableHeightForLayout = Math.max(availableHeightForLayout, 400); 
+
+            // Clear any existing SVG to prevent duplicates on resize
+            d3.select("#tree-container svg").remove();
+
+            // Create a tree layout
+            tree = d3.layout.tree()
+                // .size([width, height]) sets the dimensions of the rectangular space
+                // that the tree layout will attempt to fit the nodes into.
+                .size([availableWidthForLayout, availableHeightForLayout]); 
+
+            // Create a diagonal path generator for links
+            diagonal = d3.svg.diagonal()
+                .projection(function(d) { return [d.x, d.y]; });
+
+            // Select the container and append SVG
+            svg = d3.select("#tree-container").append("svg")
+                // The SVG element itself should encompass the layout size PLUS the margins
+                .attr("width", availableWidthForLayout + currentMargin.left + currentMargin.right) 
+                .attr("height", availableHeightForLayout + currentMargin.top + currentMargin.bottom) 
+                .append("g")
+                // Translate the main 'g' element to account for the top/left margins
+                .attr("transform", "translate(" + currentMargin.left + "," + currentMargin.top + ")");
+            
+            // Only assign root once on the very first load
+            if (!root) { 
+                root = familyData;
+                // Initial x0 and y0 should be relative to the *tree layout's* coordinate system
+                // which is 0 to `availableWidthForLayout` and 0 to `availableHeightForLayout`.
+                root.x0 = availableWidthForLayout / 2; // Initial x position for root (centered horizontally in layout space)
+                root.y0 = 0; // Initial y position for root (top of layout space)
+
+                // Collapse all children initially except the first level
+                function collapse(d) {
+                    if (d.children) {
+                        d._children = d.children;
+                        d._children.forEach(collapse);
+                        d.children = null;
+                    }
+                }
+                // Collapse all nodes except the root and its direct children
+                if (root.children) {
+                    root.children.forEach(collapse);
+                }
+            }
+            
+            // Update the tree to reflect new dimensions or initial draw
+            update(root); 
+        }
 
         // Helper to find a node by name and expand its path
-        function findNodeAndExpandPath(rootNode, targetName) {
+        function findNodeAndExpandPath(startNode, targetName) {
             let foundNode = null;
 
-            function search(node) {
+            function searchAndExpand(node) {
+                if (!node) return false;
+
                 if (node.name === targetName) {
                     foundNode = node;
-                    return true; // Found the target node
+                    return true;
                 }
-                if (node._children) { // If it has collapsed children
-                    // Temporarily expand to search deeper
+
+                if (node._children) {
                     node.children = node._children;
                     node._children = null;
                 }
+
                 if (node.children) {
                     for (let i = 0; i < node.children.length; i++) {
-                        if (search(node.children[i])) {
-                            return true; // Target found in this branch
+                        if (searchAndExpand(node.children[i])) {
+                            return true; 
                         }
                     }
                 }
-                return false; // Target not in this branch
+                if (foundNode === null && node.children) { 
+                    node._children = node.children;
+                    node.children = null;
+                }
+                return false;
             }
 
-            search(rootNode); // Start search from the root
+            function collapseAll(node) {
+                if (node.children) {
+                    node._children = node.children;
+                    node._children.forEach(collapseAll);
+                    node.children = null;
+                }
+            }
+            if (startNode.children) { 
+                startNode.children.forEach(collapseAll);
+            }
+
+            searchAndExpand(startNode);
             return foundNode;
         }
 
@@ -309,12 +369,26 @@
             }
 
             const treeContainer = document.getElementById('tree-container');
-            const nodeRect = targetG.node().getBoundingClientRect();
-            const containerRect = treeContainer.getBoundingClientRect();
+            const nodeData = targetG.datum(); 
+            
+            // Get the calculated translationX from the last update
+            // This is crucial because nodeData.x is relative to D3's internal layout space (0 to layoutWidth)
+            // but the actual SVG position is shifted by translationX.
+            let nodes = tree.nodes(root); // Recalculate nodes to get fresh x positions
+            let minX = d3.min(nodes, d => d.x);
+            let maxX = d3.max(nodes, d => d.x);
+            let treeContentWidth = maxX - minX;
+            const availableLayoutWidth = tree.size()[0]; // Width used for D3 layout
+            let translationX = (availableLayoutWidth / 2) - (treeContentWidth / 2) - minX;
 
-            // Calculate scroll position to center the node
-            const scrollX = nodeRect.left - containerRect.left + treeContainer.scrollLeft - (containerRect.width / 2) + (nodeRect.width / 2);
-            const scrollY = nodeRect.top - containerRect.top + treeContainer.scrollTop - (containerRect.height / 2) + (nodeRect.height / 2);
+            // Calculate the node's position relative to the SVG's top-left origin (0,0)
+            // This includes the layout's calculated X, the horizontal centering offset, AND the SVG's left margin
+            const nodeAbsX_in_svg = nodeData.x + translationX + currentMargin.left;
+            const nodeAbsY_in_svg = nodeData.y + currentMargin.top; // Y is simpler as there's no dynamic vertical centering
+
+            // Calculate scroll position to center the node in the container
+            const scrollX = nodeAbsX_in_svg - (treeContainer.clientWidth / 2);
+            const scrollY = nodeAbsY_in_svg - (treeContainer.clientHeight / 2);
 
             treeContainer.scrollTo({
                 left: scrollX,
@@ -323,15 +397,32 @@
             });
         }
 
+
         // Function to update the tree
         function update(source) {
             // Compute the new tree layout.
-            const nodes = tree.nodes(root).reverse();
+            const nodes = tree.nodes(root); 
             const links = tree.links(nodes);
 
-            // Normalize for fixed-depth.
-            nodes.forEach(function(d) { d.y = d.depth * 180; }); // Adjust depth spacing
+            // Normalize for fixed-depth (vertical spacing).
+            const depthSpacing = 120; // Increased from 100 to 120. Adjust as needed.
+            nodes.forEach(function(d) { d.y = d.depth * depthSpacing; });
 
+            // Calculate the extent of the tree's x-coordinates to center it
+            // This needs to be done *after* tree.nodes(root) to get the latest x values
+            let minX = d3.min(nodes, d => d.x);
+            let maxX = d3.max(nodes, d => d.x);
+            
+            // Calculate the actual width of the tree content (from leftmost to rightmost node)
+            let treeContentWidth = maxX - minX;
+
+            // Get the available width that the D3 tree layout is using
+            const availableLayoutWidth = tree.size()[0]; 
+
+            // Calculate translation needed to center the tree content horizontally within the availableLayoutWidth
+            // This offset is applied to each node's x-position.
+            let translationX = (availableLayoutWidth / 2) - (treeContentWidth / 2) - minX;
+            
             // Update the nodes…
             const node = svg.selectAll("g.node")
                 .data(nodes, function(d) { return d.id || (d.id = ++i); });
@@ -339,9 +430,10 @@
             // Enter any new nodes at the parent's previous position.
             const nodeEnter = node.enter().append("g")
                 .attr("class", "node")
-                .attr("id", function(d) { return "node-" + d.id; }) // ADDED ID ATTRIBUTE HERE
+                .attr("id", function(d) { return "node-" + d.id; })
                 .attr("transform", function(d) {
-                    return "translate(" + source.x0 + "," + source.y0 + ")";
+                    // Initial position for new nodes, using source's (x0, y0) and applying the horizontal translationX
+                    return "translate(" + (source.x0 + translationX) + "," + source.y0 + ")"; 
                 })
                 .on("click", click);
 
@@ -351,29 +443,46 @@
 
             nodeEnter.append("text")
                 .attr("y", function(d) {
-                    return d.children || d._children ? -18 : 18; // Position text above or below node
+                    // Adjust y-offset for text based on if it has children (collapsed or expanded)
+                    d.textYOffset = d.children || d._children ? -18 : 18;
+                    return d.textYOffset;
                 })
                 .attr("dy", ".35em")
-                .attr("text-anchor", "middle")
+                .attr("text-anchor", "middle") 
+                .attr("transform", function(d) {
+                    return "rotate(" + textRotationAngle + ", 0, " + d.textYOffset + ")"; 
+                })
                 .text(function(d) { return d.name; })
                 .style("fill-opacity", 1e-6);
 
             // Transition nodes to their new position.
             const nodeUpdate = node.transition()
                 .duration(duration)
-                .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                .attr("transform", function(d) { 
+                    // Apply horizontal centering offset here as well
+                    return "translate(" + (d.x + translationX) + "," + d.y + ")"; 
+                });
 
             nodeUpdate.select("circle")
                 .attr("r", 8)
                 .style("fill", function(d) { return d._children ? "#e8f0fe" : "#fff"; });
 
             nodeUpdate.select("text")
-                .style("fill-opacity", 1);
+                .attr("y", function(d) { 
+                    d.textYOffset = d.children || d._children ? -18 : 18;
+                    return d.textYOffset;
+                })
+                .style("fill-opacity", 1)
+                .attr("transform", function(d) {
+                    return "rotate(" + textRotationAngle + ", 0, " + d.textYOffset + ")"; 
+                });
 
             // Transition exiting nodes to the parent's new position.
             const nodeExit = node.exit().transition()
                 .duration(duration)
-                .attr("transform", function(d) { return "translate(" + source.x + "," + source.y + ")"; })
+                .attr("transform", function(d) { 
+                    return "translate(" + (source.x + translationX) + "," + source.y + ")"; 
+                })
                 .remove();
 
             nodeExit.select("circle")
@@ -390,29 +499,53 @@
             link.enter().insert("path", "g")
                 .attr("class", "link")
                 .attr("d", function(d) {
-                    const o = { x: source.x0, y: source.y0 };
+                    // Links start from the source's previous position, with translationX applied
+                    const o = { x: source.x0 + translationX, y: source.y0 }; 
                     return diagonal({ source: o, target: o });
                 });
 
             // Transition links to their new position.
             link.transition()
                 .duration(duration)
-                .attr("d", diagonal);
+                .attr("d", function(d) {
+                    // Links go to their new positions, with translationX applied
+                    const s = { x: d.source.x + translationX, y: d.source.y };
+                    const t = { x: d.target.x + translationX, y: d.target.y };
+                    return diagonal({ source: s, target: t });
+                });
 
             // Transition exiting links to the parent's new position.
             link.exit().transition()
                 .duration(duration)
                 .attr("d", function(d) {
-                    const o = { x: source.x, y: source.y };
+                    // Exiting links animate towards the source's current position, with translationX applied
+                    const o = { x: source.x + translationX, y: source.y };
                     return diagonal({ source: o, target: o });
                 })
                 .remove();
 
             // Stash the old positions for transition.
             nodes.forEach(function(d) {
-                d.x0 = d.x;
+                d.x0 = d.x + translationX; // Store adjusted x for transitions
                 d.y0 = d.y;
             });
+
+            // After the update, adjust the SVG's actual width if the tree content is wider than the container.
+            // This helps with ensuring scrollability if the content overflows.
+            const container = document.getElementById('tree-container');
+            const requiredSVGWidth = (maxX - minX) + (currentMargin.left + currentMargin.right);
+            const currentSVGWidth = parseFloat(d3.select("#tree-container svg").attr("width"));
+
+            // Set the SVG's width to be at least the required width, or the container's max width if it's smaller
+            const newSVGWidth = Math.max(requiredSVGWidth, container.clientWidth); 
+            d3.select("#tree-container svg").attr("width", newSVGWidth);
+
+            // Also ensure SVG height accommodates the deepest node
+            let maxY = d3.max(nodes, d => d.y);
+            const requiredSVGHeight = maxY + currentMargin.top + currentMargin.bottom + 50; // Add some extra buffer
+            const currentSVGHeight = parseFloat(d3.select("#tree-container svg").attr("height"));
+            const newSVGHeight = Math.max(requiredSVGHeight, container.clientHeight);
+            d3.select("#tree-container svg").attr("height", newSVGHeight);
         }
 
         // Toggle children on click.
@@ -427,41 +560,23 @@
             update(d);
         }
 
-        // Initialize the tree
+        // Initialize the tree on page load
         window.onload = function() {
-            root = familyData;
-            root.x0 = width / 2; // Initial x position for root
-            root.y0 = 0; // Initial y position for root
+            initializeD3(); 
 
-            // Collapse all children initially except the first level
-            function collapse(d) {
-                if (d.children) {
-                    d._children = d.children;
-                    d._children.forEach(collapse);
-                    d.children = null;
-                }
-            }
-
-            // Collapse all nodes except the root and its direct children
-            root.children.forEach(collapse);
-
-            update(root); // Draw the tree
-
+            // Attach event listener for the footer link
             document.querySelector('.internal-node-link').addEventListener('click', function(e) {
-                e.preventDefault(); // Prevent default link behavior
-                const targetNodeName = this.dataset.targetNode; // Get the target name from data attribute
-
-                // Find the node and ensure its path is expanded
+                e.preventDefault();
+                const targetNodeName = this.dataset.targetNode; 
+                
                 const targetNode = findNodeAndExpandPath(root, targetNodeName);
 
                 if (targetNode) {
-                    // Update the tree to reflect expansions
-                    update(root);
+                    update(root); 
 
-                    // Scroll to the node after the transition completes
                     setTimeout(() => {
                         scrollToNode("node-" + targetNode.id);
-                    }, duration + 50); // A bit longer than the D3 transition duration
+                    }, duration + 50);
                 } else {
                     console.warn("Node '" + targetNodeName + "' not found in the tree data.");
                 }
@@ -470,19 +585,7 @@
 
         // Resize function to make the SVG responsive
         window.addEventListener('resize', () => {
-            const container = document.getElementById('tree-container');
-            width = container.clientWidth - margin.right - margin.left;
-            height = container.clientHeight - margin.top - margin.bottom;
-
-            tree.size([width, height]);
-
-            // Update SVG dimensions
-            d3.select("#tree-container svg")
-                .attr("width", width + margin.right + margin.left)
-                .attr("height", height + margin.top + margin.bottom);
-
-            // Recalculate and redraw the tree
-            update(root);
+            initializeD3(); 
         });
     </script>
 </body>
