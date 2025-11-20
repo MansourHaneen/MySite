@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Designed for -- Captain Abduh Haneen</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* Custom styles for the calendar appearance and font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* --- Color Definitions --- */
+:root {
+/* Light Mode Colors */
+--bg-body: #f7f7f7;
+--bg-container: white;
+--bg-accent-light: #FFF2E6; /* Lightest Orange */
+--text-primary: #1f2937; /* Dark Gray */
+--text-secondary: #6b7280; /* Medium Gray */
+--text-accent: #8D5524; /* Dark Brown/Orange Text */
+--color-marked-bg: #FFB26E;
+--color-marked-border: #E69A56;
+--color-start-bg: #E69A56; /* For start date marker */
+--color-start-text: white;
+--color-day-hover: #FEEBDC; /* Hover for unmarked days */
+--color-other-month-bg: #f9fafb;
+--color-other-month-text: #9ca3af;
+--color-grid-border: #e5e7eb; /* Soft light border */
+/* Year Navigation Colors */
+--nav-btn-bg: #e5e7eb;
+--nav-btn-text: #374151;
+--nav-btn-hover-bg: #d1d5db;
+}
+
+body.dark-mode {
+/* Dark Mode Overrides */
+--bg-body: #0f0f10; /* Dark Gray-800 */
+--bg-container: #18191b; /* Dark Gray-700 */
+--bg-accent-light: #4b5563; /* Darker Accent BG */
+--text-primary: #f3f4f6; /* Light Gray-100 */
+--text-secondary: #9ca3af; /* Gray-400 */
+--text-accent: #ffb26e; /* Light Orange Text */
+--color-marked-bg: #E69A56; /* Slightly darker orange for dark BG */
+--color-marked-border: #8D5524;
+--color-start-bg: #D0884A;
+--color-start-text: #f3f4f6;
+--color-day-hover: #4b5563; /* Hover for unmarked days */
+--color-other-month-bg: #374151;
+--color-other-month-text: #6b7280;
+--color-grid-border: #4b5563; /* Darker border for dark mode */
+/* Year Navigation Colors */
+--nav-btn-bg: #4b5563;
+--nav-btn-text: #f3f4f6;
+--nav-btn-hover-bg: #6b7280;
+}
+
+/* --- Base Styles --- */
+body {
+font-family: 'Inter', sans-serif;
+background-color: var(--bg-body);
+min-height: 100vh;
+color: var(--text-primary);
+transition: background-color 0.3s;
+}
+.calendar-app {
+background-color: var(--bg-container);
+transition: background-color 0.3s, box-shadow 0.3s;
+}
+/* Grid for month view (7 columns) */
+.calendar-grid {
+display: grid;
+grid-template-columns: repeat(7, 1fr);
+gap: 1px;
+}
+/* Grid for full year view (responsive months) */
+.year-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 20px;
+}
+
+.day-header {
+text-align: center;
+padding: 4px 0;
+font-weight: 600;
+color: var(--text-secondary);
+font-size: 0.75rem; /* text-xs */
+}
+.day-cell {
+min-height: 45px;
+padding: 2px;
+font-size: 0.8rem;
+text-align: right;
+border: 1px solid var(--color-grid-border);
+background-color: var(--bg-container);
+transition: background-color 0.15s, transform 0.15s;
+cursor: default;
+display: flex;
+flex-direction: column;
+align-items: flex-end;
+justify-content: flex-start;
+position: relative;
+}
+
+.day-cell.clickable:hover:not(.marked-day) {
+background-color: var(--color-day-hover);
+transform: translateY(-1px);
+box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+cursor: pointer;
+}
+.day-cell.clickable.marked-day:hover {
+transform: translateY(-1px);
+box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+
+/* --- Date Styles --- */
+.gregorian-date {
+font-size: 0.9rem;
+font-weight: 600;
+color: var(--text-primary);
+line-height: 1;
+}
+.hijri-date {
+font-size: 0.6rem;
+color: var(--text-secondary);
+margin-top: 2px;
+line-height: 1;
+}
+
+/* --- Marked Day Styles (Orange Scheme) --- */
+.marked-day {
+background-color: var(--color-marked-bg);
+font-weight: 600;
+border-color: var(--color-marked-border);
+}
+.marked-day .gregorian-date, .marked-day .hijri-date {
+color: var(--text-accent);
+}
+
+/* --- Schedule Start Date Marker --- */
+.start-date-marker {
+background-color: var(--color-start-bg);
+border-color: var(--color-start-bg);
+color: var(--color-start-text);
+box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.start-date-marker .gregorian-date, .start-date-marker .hijri-date {
+color: var(--color-start-text) !important;
+}
+
+/* --- Current Day & Other Month Styles --- */
+.current-day-marker {
+position: absolute;
+top: 2px;
+left: 2px;
+width: 6px;
+height: 6px;
+border-radius: 50%;
+background-color: #ef4444; /* Red-500 */
+z-index: 10;
+}
+
+.other-month {
+color: var(--color-other-month-text);
+background-color: var(--color-other-month-bg);
+cursor: default;
+}
+.other-month .gregorian-date, .other-month .hijri-date {
+color: var(--color-other-month-text);
+}
+.other-month:hover {
+background-color: var(--color-other-month-bg);
+}
+/* Full Year View Month Header */
+.month-name-header {
+font-size: 1.25rem; /* text-xl */
+font-weight: 600;
+color: var(--text-primary);
+margin-bottom: 4px;
+text-align: center;
+padding: 8px 0;
+border-bottom: 2px solid var(--color-marked-bg);
+}
+/* Year Navigation Button Styles */
+.nav-btn {
+background-color: var(--nav-btn-bg);
+color: var(--nav-btn-text);
+transition: background-color 0.2s, transform 0.1s;
+}
+.nav-btn:hover {
+background-color: var(--nav-btn-hover-bg);
+transform: translateY(-1px);
+}
+</style>
+</head>
+<body class="p-4 md:p-8">
+
+<div id="app" class="calendar-app max-w-7xl mx-auto shadow-xl rounded-xl p-4 md:p-8">
+<div class="flex flex-col md:flex-row justify-between items-start mb-4">
+<div>
+<h1 class="text-3xl font-bold mb-2">Designed for -- Captain Abduh Haneen</h1>
+</div>
+<div class="flex space-x-2 mt-4 md:mt-0">
+<button id="theme-toggle" class="p-2 rounded-full text-gray-700 bg-gray-200 hover:scale-105 transition-transform shadow-md">
+<svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+<svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+</button>
+</div>
+</div>
+<div id="auth-status" class="text-sm mb-4 text-center text-gray-500">
+<span>Initializing persistence...</span>
+</div>
+
+<div id="schedule-status" class="mb-6 p-3 text-center rounded-lg font-medium hidden"></div>
+
+<div id="full-year-view">
+    <div class="flex justify-center items-center space-x-4 mb-6">
+        <button id="prev-year-btn" class="nav-btn px-4 py-2 rounded-lg font-semibold shadow-md">
+            Prev Year
+        </button>
+        <h2 id="full-year-title" class="text-3xl font-bold" style="color: var(--text-accent);">Loading...</h2>
+        <button id="next-year-btn" class="nav-btn px-4 py-2 rounded-lg font-semibold shadow-md">
+            Next Year
+        </button>
+    </div>
+    <div id="year-calendar-body" class="year-grid">
+</div>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// Set Firebase log level for debugging
+setLogLevel('debug');
+
+// Global Firebase variables
+let app;
+let db;
+let auth;
+let userId = 'anonymous';
+let isAuthReady = false;
+
+// Global state for the calendar
+let currentMarkedDates = new Set();
+let currentStartDate = null;
+const currentToday = new Date();
+currentToday.setHours(0, 0, 0, 0); // Set to midnight for clean comparison
+
+// NEW: State for the year currently displayed
+let currentDisplayYear = currentToday.getFullYear();
+
+// Configuration
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+const SCHEDULE_DOC_PATH = `/artifacts/${appId}/public/data/marked_schedule/settings`;
+
+// --- Utility Functions ---
+
+// Utility: Format date as YYYY-MM-DD (FIXED: Uses local date components)
+const formatDateKey = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+// Utility: Add or subtract days from a Date object
+const addDays = (date, days) => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+};
+
+/**
+ * Toggles the dark mode class on the body and saves preference to localStorage.
+ */
+function toggleTheme(isDark) {
+    const body = document.body;
+    let currentThemeIsDark = body.classList.contains('dark-mode');
+    if (isDark === undefined) {
+        currentThemeIsDark = !currentThemeIsDark;
+    } else {
+        currentThemeIsDark = isDark;
+    }
+
+    if (currentThemeIsDark) {
+        body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('moon-icon').classList.remove('hidden');
+        document.getElementById('sun-icon').classList.add('hidden');
+    } else {
+        body.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('moon-icon').classList.add('hidden');
+        document.getElementById('sun-icon').classList.remove('hidden');
+    }
+
+    updateScheduleStatus();
+}
+
+/**
+ * Loads theme preference from localStorage or detects system preference.
+ */
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        toggleTheme(savedTheme === 'dark');
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        toggleTheme(true);
+    } else {
+        toggleTheme(false);
+    }
+}
+
+/**
+ * Converts a Gregorian date to a short Hijri (Islamic Umm al-Qura) date format (e.g., 25 Safar).
+ */
+function getHijriDate(date) {
+    try {
+        const formatter = new Intl.DateTimeFormat('en', {
+            calendar: 'islamic-umalqura',
+            day: 'numeric',
+            month: 'short',
+            numberingSystem: 'latn'
+        });
+        const formattedDate = formatter.format(date);
+        return formattedDate;
+    } catch (e) {
+        console.error("Error formatting Hijri date:", e);
+        return 'H-Date Error';
+    }
+}
+
+/**
+ * Updates the global currentMarkedDates using the correct multi-year calculation logic.
+ * This should be called whenever currentStartDate changes or currentDisplayYear changes.
+ */
+function updateMarkedDates() {
+    if (currentStartDate) {
+        const startDate = new Date(currentStartDate);
+        // Recalculate the pattern based on the fixed start date, but check against the currently displayed year's range.
+        const oneDay = 1000 * 60 * 60 * 24;
+        const markedDates = new Set();
+        const patternLength = 12; // 6 mark + 6 skip
+        
+        let currentDate = new Date(currentDisplayYear, 0, 1); // Start at Jan 1 of the displayed year
+        currentDate.setHours(0, 0, 0, 0);
+        const endOfDisplayYear = new Date(currentDisplayYear, 11, 31);
+        endOfDisplayYear.setHours(0, 0, 0, 0);
+
+        while (currentDate <= endOfDisplayYear) {
+            // Total days elapsed since the start date (including the start day itself)
+            // Use Math.round to handle possible floating point errors from the division
+            const daysElapsed = Math.round((currentDate.getTime() - startDate.getTime()) / oneDay);
+            
+            // Determine where we are in the 12-day cycle: 0-5 (Mark), 6-11 (Skip)
+            let dayInCycle = daysElapsed % patternLength;
+            if (dayInCycle < 0) {
+                // Handle negative numbers if the start date is *after* the current date
+                dayInCycle += patternLength;
+            }
+
+            if (dayInCycle >= 0 && dayInCycle <= 5) { // Days 0 through 5 (6 days total) are Mark days
+                markedDates.add(formatDateKey(currentDate));
+            }
+            
+            currentDate = addDays(currentDate, 1);
+        }
+
+        currentMarkedDates = markedDates;
+    } else {
+        currentMarkedDates = new Set();
+    }
+}
+
+
+/**
+ * Generates the HTML for a single month's grid (used by the year view).
+ * @param {number} year - The year to display.
+ * @param {number} month - The month (0-11) to display.
+ * @returns {HTMLDivElement} A div element containing the calendar body for the month.
+ */
+function createMonthGrid(year, month) {
+    const monthBody = document.createElement('div');
+    monthBody.className = 'calendar-grid border-l border-b border-r';
+    monthBody.style.borderColor = 'var(--color-grid-border)';
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const startDayOfWeek = firstDayOfMonth.getDay();
+    const firstCellDate = addDays(firstDayOfMonth, -startDayOfWeek);
+
+    // Determine how many weeks are needed (42 cells covers all cases)
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const totalCells = Math.ceil((startDayOfWeek + daysInMonth) / 7) * 7;
+    for (let i = 0; i < totalCells; i++) {
+        const cellDate = addDays(firstCellDate, i);
+        const cellDateKey = formatDateKey(cellDate);
+        const cellDay = cellDate.getDate();
+        const cellMonth = cellDate.getMonth();
+        const dayCell = document.createElement('div');
+        dayCell.className = 'day-cell';
+        
+        const isToday = cellDateKey === formatDateKey(currentToday);
+        const isMarked = currentMarkedDates.has(cellDateKey);
+        const isStartDate = currentStartDate && cellDateKey === currentStartDate;
+        const hijriDate = getHijriDate(cellDate);
+
+        const gregorianSpan = document.createElement('span');
+        gregorianSpan.className = 'gregorian-date text-right w-full';
+        gregorianSpan.textContent = cellDay;
+        const hijriSpan = document.createElement('span');
+        hijriSpan.className = 'hijri-date text-right w-full';
+        hijriSpan.textContent = hijriDate;
+        dayCell.appendChild(gregorianSpan);
+        dayCell.appendChild(hijriSpan);
+
+        // --- FIX IMPLEMENTATION START ---
+        // Check 1: Must be in the month being rendered (and by extension, the current year)
+        const isCurrentMonthDay = cellDate.getFullYear() === year && cellMonth === month;
+        // Check 2: Must be today or a future day (cellDate >= currentToday)
+        const isTodayOrFuture = cellDate.getTime() >= currentToday.getTime();
+
+        if (!isCurrentMonthDay) {
+            // Not in the current month (previous or next month's spillover)
+            dayCell.classList.add('other-month');
+        } else {
+            // Day is in the current month/year
+            if (isTodayOrFuture) {
+                // Only make the day clickable if it's the current day or a future day.
+                dayCell.classList.add('clickable');
+                // Pass components to handle the click
+                dayCell.onclick = () => handleDayClick(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
+                dayCell.title = "Click to set this as the schedule start date.";
+            } else {
+                // Day is in the current month but is a previous day, so it's not clickable.
+                dayCell.style.opacity = '0.5'; 
+            }
+        }
+        // --- FIX IMPLEMENTATION END ---
+
+        if (isMarked) {
+            dayCell.classList.add('marked-day');
+            dayCell.title = dayCell.title ? dayCell.title + " (Marked Day)" : "Marked Day";
+        }
+        
+        if (isStartDate) {
+             dayCell.classList.add('start-date-marker');
+             dayCell.title = `SCHEDULE START: ${currentStartDate}`;
+        }
+
+
+        if (isToday) {
+            const todayMarker = document.createElement('div');
+            todayMarker.className = 'current-day-marker';
+            dayCell.appendChild(todayMarker);
+        }
+
+        monthBody.appendChild(dayCell);
+    }
+    return monthBody;
+}
+
+/**
+ * Renders the full 12-month calendar for the currently set display year.
+ * @param {number} [year=currentDisplayYear] - The year to display.
+ */
+function renderFullYearView(year = currentDisplayYear) {
+    // 1. Update the current display year state
+    currentDisplayYear = year; 
+    
+    // 2. Calculate marked dates for this year based on the fixed start date
+    updateMarkedDates();
+
+    // 3. Update the title
+    const titleEl = document.getElementById('full-year-title');
+    titleEl.textContent = `Calendar: ${currentDisplayYear}`;
+
+    // 4. Render the calendar months
+    const yearBody = document.getElementById('year-calendar-body');
+    yearBody.innerHTML = '';
+
+    const dayHeaders = `
+    <div class="calendar-grid text-xs mb-1 border-l border-r" style="border-color: var(--color-grid-border);">
+        <div class="day-header">S</div>
+        <div class="day-header">M</div>
+        <div class="day-header">T</div>
+        <div class="day-header">W</div>
+        <div class="day-header">T</div>
+        <div class="day-header">F</div>
+        <div class="day-header">S</div>
+    </div>`;
+
+    for (let month = 0; month < 12; month++) {
+        const monthContainer = document.createElement('div');
+        monthContainer.className = 'rounded-xl shadow-lg p-3'
+        monthContainer.style.backgroundColor = 'var(--bg-container)';
+
+        const monthName = new Date(currentDisplayYear, month).toLocaleString('en-US', { month: 'long' });
+        monthContainer.innerHTML = `<div class="month-name-header">${monthName}</div>`;
+        
+        // Add day headers container first
+        const headersWrapper = document.createElement('div');
+        headersWrapper.innerHTML = dayHeaders;
+        monthContainer.appendChild(headersWrapper);
+
+        // Add the calendar grid
+        const monthGrid = createMonthGrid(currentDisplayYear, month);
+        monthContainer.appendChild(monthGrid);
+        yearBody.appendChild(monthContainer);
+    }
+
+    updateScheduleStatus();
+}
+
+/**
+ * Handles changing the displayed year.
+ * @param {number} delta - +1 for next year, -1 for previous year.
+ */
+function changeYear(delta) {
+    renderFullYearView(currentDisplayYear + delta);
+}
+
+/**
+ * Updates the status message below the navigation based on the schedule start date.
+ */
+function updateScheduleStatus() {
+    const statusEl = document.getElementById('schedule-status');
+    if (!statusEl) return;
+
+    const isDark = document.body.classList.contains('dark-mode');
+
+    // Reset color classes
+    statusEl.classList.remove(
+        'hidden',
+        'bg-green-100', 'text-green-700',
+        'bg-green-800', 'text-green-100',
+        'bg-[#fff2e6]', 'text-[#8d5524]',
+        'bg-[#4b5563]', 'text-[#ffb26e]'
+    );
+
+    if (currentStartDate) {
+        const formattedDate = new Date(currentStartDate).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+        statusEl.textContent = `Schedule started on: ${formattedDate}. All orange days are part of your 6-day work rotation.`;
+
+        if (isDark) {
+            statusEl.classList.add('bg-[#4b5563]', 'text-[#ffb26e]');
+        } else {
+            statusEl.classList.add('bg-[#fff2e6]', 'text-[#8d5524]');
+        }
+    } else {
+        statusEl.textContent = 'No schedule set. Click today or a future day to define the START date for the 6-on/6-off pattern.';
+
+        if (isDark) {
+            statusEl.classList.add('bg-green-800', 'text-green-100');
+        } else {
+            statusEl.classList.add('bg-green-100', 'text-green-700');
+        }
+    }
+
+    statusEl.classList.remove('hidden');
+}
+
+/**
+ * Handles the click on a day cell to set the schedule start date.
+ * @param {number} year The year of the clicked date.
+ * @param {number} month The month (0-11) of the clicked date.
+ * @param {number} day The day (1-31) of the clicked date.
+ */
+async function handleDayClick(year, month, day) {
+    // Explicitly construct the date at local midnight
+    const date = new Date(year, month, day, 0, 0, 0, 0); 
+    
+    const newStartDate = formatDateKey(date);
+    
+    // Safety check for Firebase write access
+    if (db && isAuthReady && userId !== 'anonymous') { // Check for proper authentication
+        try {
+            const docRef = doc(db, SCHEDULE_DOC_PATH);
+            // This is a public doc, so the userId is not part of the path, allowing sharing.
+            await setDoc(docRef, { 
+                startDate: newStartDate, 
+                lastUpdatedBy: userId,
+                timestamp: new Date().toISOString()
+            }, { merge: true });
+            console.log('Schedule start date updated successfully (PERSISTENT):', newStartDate);
+        } catch (e) {
+            console.error('Error updating schedule start date:', e);
+            // If permissions fail here, we still update locally for immediate feedback
+            currentStartDate = newStartDate;
+            updateMarkedDates(); // Use the new function
+            renderFullYearView(currentDisplayYear); // Re-render the current year
+        }
+    } else {
+        // Fallback for when Firebase isn't initialized or auth isn't ready/not fully authenticated
+        currentStartDate = newStartDate;
+        updateMarkedDates(); // Use the new function
+        renderFullYearView(currentDisplayYear); // Re-render the current year
+        console.warn('Firebase not ready or user is anonymous. Start date updated locally only.');
+    }
+}
+
+/**
+ * Sets up the real-time listener for the schedule start date in Firestore.
+ */
+function setupRealtimeListener() {
+    // Only proceed if db is initialized AND auth process has finished and determined user ID
+    if (!db || !isAuthReady) {
+        console.warn("Attempted to set up listener before Firebase/Auth was ready.");
+        return;
+    }
+
+    const docRef = doc(db, SCHEDULE_DOC_PATH);
+    
+    // Assign the unsubscribe function returned by onSnapshot
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+        const startDateStr = docSnap.exists() ? docSnap.data().startDate : null;
+        
+        // Only re-render if the start date has *actually* changed
+        if (startDateStr !== currentStartDate) {
+            currentStartDate = startDateStr;
+            
+            if (currentStartDate) {
+                console.log("New schedule start date received:", currentStartDate);
+            } else {
+                console.log("Schedule cleared from database.");
+            }
+            // Re-render the currently displayed year with the new start date
+            renderFullYearView(currentDisplayYear);
+        } else if (currentStartDate === null) {
+            // Initial render if no data exists and no start date is set
+            renderFullYearView(currentDisplayYear); 
+        }
+    }, (error) => {
+        // ERROR LOGIC
+        console.error("Error setting up real-time listener:", error);
+        
+        // If permission error, unsubscribe and render default view
+        if (error.code === 'permission-denied' || error.message.includes('Missing or insufficient permissions')) {
+            console.warn("Listener stopped due to permission error. Displaying default calendar view.");
+            unsubscribe(); // Stop the listener immediately
+            // Ensure the app renders the default calendar if no data was loaded successfully
+            if (currentStartDate === null) {
+                renderFullYearView(currentDisplayYear);
+            }
+        }
+    });
+}
+
+/**
+ * Initializes Firebase and authenticates the user.
+ */
+async function initializeFirebase() {
+    const authStatusEl = document.getElementById('auth-status');
+
+    if (!firebaseConfig.apiKey) {
+        authStatusEl.innerHTML = '';
+        renderFullYearView();
+        return;
+    }
+
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        
+        // Use a Promise to ensure authentication completes before proceeding
+        await new Promise(resolve => {
+            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    isAuthReady = true;
+                    authStatusEl.innerHTML = `<span class="text-gray-700">User ID:</span> <span class="font-mono text-xs">${userId}</span> <span class="text-green-500">(Authenticated)</span>`;
+                } else {
+                    userId = 'anonymous'; // Fallback if sign-in fails or user is null
+                    isAuthReady = true;
+                    authStatusEl.innerHTML = `<span class="text-gray-700">User ID:</span> <span class="font-mono text-xs">${userId}</span> <span class="text-orange-500">(Anonymous)</span>`;
+                }
+                unsubscribe(); // Stop listening after the initial state is determined
+                resolve();
+            });
+            // Try to sign in using the custom token first
+            if (initialAuthToken) {
+                signInWithCustomToken(auth, initialAuthToken).catch(e => {
+                    console.error("Custom token sign in failed, falling back to anonymous:", e);
+                    signInAnonymously(auth);
+                });
+            } else {
+                signInAnonymously(auth);
+            }
+        });
+
+        // Now that auth is ready, set up the listener
+        setupRealtimeListener();
+
+    } catch (e) {
+        console.error("Firebase initialization failed:", e);
+        authStatusEl.innerHTML = '<span class="text-red-500">Initialization Error. Persistence disabled.</span>';
+        renderFullYearView(); // Render even if persistence failed
+    }
+}
+
+// --- Event Listeners and Initial Load ---
+document.addEventListener('DOMContentLoaded', () => {
+    loadTheme();
+    document.getElementById('theme-toggle').addEventListener('click', () => toggleTheme());
+    
+    // Add event listeners for year navigation
+    document.getElementById('prev-year-btn').addEventListener('click', () => changeYear(-1));
+    document.getElementById('next-year-btn').addEventListener('click', () => changeYear(1));
+
+    initializeFirebase();
+});
+
+</script>
+</body>
+</html>
