@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows Forensic Artifacts Notes 👣</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-color: #0f0f10;
+        --container-bg: #18191b;
+        --text-main: #f8fafc;
+        --text-dim: #94a3b8;
+        --accent-primary: #38bdf8;
+        --accent-secondary: #ffb26e;
+        --code-bg: #000000;
+        --border-color: #212124;
+        --hr-color: #212124;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        line-height: 1.6;
+        margin: 0;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .content-wrapper {
+        max-width: 900px;
+        width: 100%;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #FE8925;
+    }
+
+    h2, h3, h4 {
+        color: #FE8925;
+        margin-top: 1.5rem;
+    }
+
+    details {
+        background: var(--container-bg);
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    details[open] {
+        border-color: #FE8925;
+    }
+
+    summary {
+        font-weight: bold;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.5rem 0;
+        color: var(--text-main);
+        outline: none;
+    }
+
+    summary:hover {
+        color: #FE8925;
+    }
+
+    pre {
+        background-color: var(--code-bg);
+        padding: 1.2rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+        color: #e2e8f0;
+    }
+
+    code {
+        font-family: 'Fira Code', 'Courier New', monospace;
+        font-size: 0.95rem;
+        color: var(--accent-secondary);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        background: var(--container-bg);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+        background-color: var(--border-color);
+        color: #FE8925;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+    }
+
+    tr:hover {
+        background-color: rgba(56, 189, 248, 0.05);
+    }
+
+    hr {
+        border: 0;
+        height: 1px;
+        background: var(--hr-color);
+        margin: 2rem 0;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1rem 0;
+        border: 1px solid var(--border-color);
+    }
+
+    a {
+        color: #FE8925;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    span[style*="color:red"] {
+        color: #ef4444 !important;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+<div class="content-wrapper">
+<h1><code>Windows Forensic Artifacts</code> Notes 👣</h1>
+<details>
+<summary>👣 Windows Forensic Artifacts</summary>
+
+A <strong>forensic artifact</strong> is any record, file, or metadata that the system automatically creates during use. In Windows, these range from Event Logs and Prefetch to the Registry, LNK, ShellBags, SRUM, and the file system's own telemetry (NTFS).
+
+<hr>
+
+<details>
+<summary>📥 File Download Artifacts</summary>
+
+<details>
+<summary>🕒 Open/Save MRU</summary>
+In the simplest terms, this key tracks files that have been opened or saved within a Windows shell dialog box. This happens to be a big data set, not only including web browsers like Internet Explorer and Firefox, but also a majority of commonly used applications.
+
+<h4>Location:</h4>
+
+<ol>
+<li><strong>XP</strong>:<br>
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\OpenSaveMRU
+</code></pre></li>
+<li><strong>Win7/8/10</strong>:<br>
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\OpenSavePIDlMRU
+</code></pre></li>
+</ol>
+
+<h4>Interpretation:</h4>
+
+<ol>
+<li><strong>The "*" key</strong>: This subkey tracks the most recent files of any extension input in an OpenSave dialog</li>
+<li><strong>.??? (Three letter extension)</strong>: This subkey stores file info from the OpenSave dialog by specific extension</li>
+</ol>
+</details>
+<hr>
+
+<details>
+<summary>📎 Email Attachments</summary>
+The email industry estimates that 80% of email data is stored via attachments. Email standards only allow text. Attachments must be encoded with MIME/base64 format.
+
+<h4>Location:</h4>
+Outlook:
+<ol>
+<li><strong>XP</strong>:<br>
+<pre><code>%USERPROFILE%\Local Settings\ApplicationData\Microsoft\Outlook
+</code></pre></li>
+<li><strong>Win7/8/10</strong>:<br>
+<pre><code>%USERPROFILE%\AppData\Local\Microsoft\Outlook
+</code></pre></li>
+</ol>
+
+<h4>Interpretation:</h4>
+MS Outlook data files found in these locations include OST and PST files. One should also check the OLK and Content.Outlook folder, which might roam depending on the specific version of Outlook used. For more information on where to find the OLK folder this link has a <a href="https://www.groovypost.com/howto/microsoft/outlook/find-the-microsoft-outlook-temporary-olk-folder/">handy chart</a>.
+</details>
+<hr>
+
+<details>
+<summary>📼 Skype History</summary>
+Skype history keeps a log of chat sessions and files transferred from one machine to another. This is turned on by default in Skype installations.
+
+<h4>Location:</h4>
+
+<ol>
+<li><strong>XP</strong>:<br>
+<pre><code>C:\Documents and Settings\&lt;username&gt;\Application\Skype\&lt;skype-name&gt;
+</code></pre></li>
+<li><strong>Win7/8/10</strong>:<br>
+<pre><code>C:\%USERPROFILE%\AppData\Roaming\Skype\&lt;skype-name&gt;
+</code></pre></li>
+</ol>
+
+<h4>Interpretation:</h4>
+Each entry will have a date/time value and a Skype username associated with the action.
+</details>
+<hr>
+
+<details>
+<summary>🌐 Browser Artifacts</summary>
+Not directly related to "File Download". Details stored for each local user account. Records number of times visited (frequency).
+
+<h4>Location:</h4>
+
+<ol>
+<li><strong>Internet Explorer</strong>:<br>
+<pre><code>%USERPROFILE%\AppData\Roaming\Microsoft\Windows\IEDownloadHistory\index.dat
+%USERPROFILE%\AppData\Local\Microsoft\Windows\WebCache\WebCacheV*.dat
+</code></pre></li>
+<li><strong>Firefox</strong>:<br>
+<pre><code>%userprofile%\AppData\Roaming\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\downloads.sqlite
+%userprofile%\AppData\Roaming\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\places.sqlite Table:moz_annos
+</code></pre></li>
+<li><strong>Chrome</strong>:<br>
+<pre><code>%USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default\History
+</code></pre></li>
+</ol>
+
+<h4>Interpretation:</h4>
+Many sites in history will list the files that were opened from remote sites and downloaded to the local system. History will record the access to the file on the website that was accessed via a link.
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Downloads</summary>
+Firefox and IE have a built-in download manager application which keeps a history of every file downloaded by the user. This browser artifact can provide excellent information about what sites a user has been visiting and what kinds of files they have been downloading from them.
+
+<h4>Location:</h4>
+
+<ol>
+<li><strong>Internet Explorer</strong>:<br>
+<pre><code>%USERPROFILE%\AppData\Roaming\Microsoft\Windows\IEDownloadHistory\
+%USERPROFILE%\AppData\Local\Microsoft\Windows\WebCache\WebCacheV*.dat
+</code></pre></li>
+<li><strong>Firefox</strong>:<br>
+<pre><code>%userprofile%\Application Data\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\downloads.sqlite
+%userprofile%\AppData\Roaming\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\downloads.sqlite
+</code></pre></li>
+</ol>
+
+<h4>Interpretation:</h4>
+Downloads will include:
+<ul>
+<li>Filename, Size, and Type</li>
+<li>Download from and Referring Page</li>
+<li>File Save Location</li>
+<li>Application Used to Open File</li>
+<li>Download Start and End Times</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>⭕ ADS Zone.Identifier</summary>
+Starting with XP SP2, when files are downloaded from the "Internet Zone" via a browser to an NTFS volume, an alternate data stream is added to the file. The alternate data stream is named "Zone.Identifier."
+
+<h4>Useful Commands:</h4>
+
+cmd:
+
+<strong>View files with Alternate Data Streams in a directory:</strong>
+<pre><code>dir /r
+</code></pre>
+<strong>View the content of the Zone.Identifier stream:</strong>
+<pre><code>more &lt; filename.exe:Zone.Identifier
+</code></pre>
+<strong>Remove the Zone.Identifier stream (Unblock the file):</strong>
+<pre><code>del filename.exe:Zone.Identifier
+</code></pre>
+
+PowerShell:
+
+<strong>Check if a file has a Zone.Identifier stream:</strong>
+<pre><code>Get-Item -Path .\filename.exe -Stream *
+</code></pre>
+<strong>View the ZoneID content of the stream:</strong>
+<pre><code>Get-Content -Path .\filename.exe -Stream Zone.Identifier
+</code></pre>
+<strong>Unblock a downloaded file (Removes the stream):</strong>
+<pre><code>Unblock-File -Path .\filename.exe
+</code></pre>
+<strong>Recursively unblock all files in a folder:</strong>
+<pre><code>Get-ChildItem -Path .\DownloadFolder -Recurse | Unblock-File
+</code></pre>
+
+<h4>Interpretation:</h4>
+Files with an ADS Zone.Identifier containing ZoneID=3 were downloaded from the Internet.
+<ul>
+<li>URLZONE_TRUSTED = ZoneID = 2</li>
+<li>URLZONE_INTERNET = ZoneID = 3</li>
+<li>URLZONE_UNTRUSTED = ZoneID = 4</li>
+</ul>
+</details>
+
+</details>
+<hr>
+
+<details>
+<summary>⚙️ Program Execution</summary>
+
+<details>
+<summary>👤 UserAssist</summary>
+GUI-based programs launched from the desktop are tracked in the launcher on a Windows System.
+
+<h4>Location:</h4>
+<strong>NTUSER.DAT HIVE</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\Currentversion\Explorer\UserAssist\{GUID}\Count
+</code></pre>
+
+<h4>Interpretation:</h4>
+All values are <strong>ROT-13</strong> Encoded
+<ul>
+<li>GUID for XP
+<ul><li>75048700 Active Desktop</li></ul></li>
+<li>GUID for Win7/8/10
+<ul>
+<li>CEBFF5CD Executable File Execution</li>
+<li>F4E57C4B Shortcut File Execution</li>
+</ul></li>
+</ul>
+
+<strong>Example</strong>:
+<pre><code>{1NP14R77-02R7-4R5Q-O744-2RO1NR5198O7}\afybbxhc.rkr
+
+ROT-13
+
+{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\nslookup.exe
+</code></pre>
+</details>
+<hr>
+
+<details>
+<summary>⌛ Windows 10 Timeline</summary>
+Win10 records recently used applications and files in a "timeline" accessible via the <code>WIN+TAB</code> key. The data is recorded in a <code>SQLite database</code>.
+
+<h4>Location:</h4>
+<pre><code>C:\Users\&lt;profile&gt;\AppData\Local\ConnectedDevicesPlatform\&lt;random-name-folder&gt;\ActivitiesCache.db
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Application execution</li>
+<li>Focus count per application</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>⛱️ BAM/DAM</summary>
+Windows Background Activity Moderator (BAM)
+
+<h4>Location:</h4>
+<strong>Win10</strong>:
+<ul>
+<li><code>SYSTEM\CurrentControlSet\Services\bam\UserSettings\{SID}</code></li>
+<li><code>SYSTEM\CurrentControlSet\Services\dam\UserSettings\{SID}</code></li>
+</ul>
+
+<h4>Investigative Notes:</h4>
+Provides full path of the executable file that was run on the system and last execution date/time.
+</details>
+<hr>
+
+<details>
+<summary>💵 Shimcache</summary>
+Windows Application Compatibility Database is used by Windows to identify possible application compatibility challenges with executables.
+
+Tracks the executable's <code>file name</code>, <code>file size</code>, <code>last modified</code> time, and in <strong>Windows XP</strong> the last <code>update time</code>.
+
+<h4>Location:</h4>
+<strong>XP</strong>:
+<ul><li><code>SYSTEM\CurrentControlSet\Control\SessionManager\AppCompatibility</code></li></ul>
+<strong>Win7/8/10</strong>:
+<ul><li><code>SYSTEM\CurrentControlSet\Control\Session Manager\AppCompatCache</code></li></ul>
+
+<h4>Interpretation:</h4>
+Any executable run on the Windows system could be found in this key. You can use this key to identify systems that specific malware was executed on. In addition, based on the interpretation of the time-based data you might be able to determine the last time of execution or activity on the system.
+<ul>
+<li><strong>Windows XP</strong> contains at most <code>96 entries</code>
+<ul><li>LastUpdateTime is updated when the files are executed</li></ul></li>
+<li><strong>Windows 7</strong> contains at most <code>1,024 entries</code>
+<ul><li>LastUpdateTime does not exist on Win7 systems</li></ul></li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>💸 Amcache.hve</summary>
+ProgramDataUpdater (a task associated with the Application Experience Service) uses the registry file Amcache.hve to store data during process creation.
+
+<h4>Location:</h4>
+<strong>Win7/8/10</strong>:
+<pre><code>C:\Windows\AppCompat\Programs\Amcache.hve
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li><strong>Amcache.hve – Keys</strong> = <code>Amcache.hve\Root\File\{Volume GUID}\#######</code></li>
+<li>Entry for every executable run, <strong>full path information</strong>, File's <code>$StandardInfo</code> <strong>Last Modification Time</strong>, and <strong>Disk volume</strong> the executable was run from</li>
+<li><strong>First Run Time</strong> = Last Modification Time of Key</li>
+<li><code>SHA1</code> hash of executable also contained in the key</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🖥️ System Resource Usage Monitor (SRUM)</summary>
+Records 30 to 60 days of historical system performance. <code>Applications run</code>, <code>user account responsible for each</code>, and <code>application</code> and <code>bytes sent/received</code> per application per hour.
+
+<h4>Location:</h4>
+<code>SOFTWARE\Microsoft\Windows NT\CurrentVersion\SRUM\Extensions {d10ca2fe-6fcf4f6d-848e-b2e99266fa89}</code> = Application Resource Usage Provider
+<pre><code>C:\Windows\System32\SRU\
+</code></pre>
+
+<h4>Interpretation:</h4>
+Use a tool such as <code>srum_dump.exe</code> to cross correlate the data between the <code>registry keys</code> and the <code>SRUM ESE Database</code>.
+</details>
+<hr>
+
+<details>
+<summary>🦘 Jump Lists</summary>
+The Windows 7 task bar (Jump List) is engineered to allow users to "jump" or access items they have frequently or recently used quickly and easily. This functionality cannot only include <strong>recent media</strong> files; it must also include <strong>recent tasks</strong>.
+
+The data stored in the AutomaticDestinations folder will each have a unique file prepended with the AppID of the associated application.
+
+<h4>Location:</h4>
+<strong>Win7/8/10</strong>:
+<pre><code>C:\%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations
+</code></pre>
+
+<h4>Interpretation:</h4>
+<strong>First time of execution</strong> of application.
+<ul><li>Creation Time = First time item added to the AppID file.</li></ul>
+<strong>Last time of execution</strong> of application w/file open.
+<ul><li>Modification Time = Last time item added to the AppID file.</li></ul>
+List of Jump List IDs -&gt; <a href="https://dfir.to/EZJumpList">https://dfir.to/EZJumpList</a>
+</details>
+<hr>
+
+<details>
+<summary>⏮️ Last-Visited MRU</summary>
+Tracks the specific executable used by an application to open the files documented in the OpenSaveMRU key. In addition, each value also tracks the directory location for the last file that was accessed by that application.
+
+<strong>Example</strong>: Notepad.exe was last run using the <code>C:\%USERPROFILE%\Desktop</code> folder
+
+<h4>Location:</h4>
+<strong>XP</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\LastVisitedMRU
+</code></pre>
+<strong>Win7/8/10</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\LastVisitedPidlMRU
+</code></pre>
+
+<h4>Interpretation:</h4>
+Tracks the application executables used to open files in <code>OpenSaveMRU</code> and the <strong>last file path used</strong>.
+</details>
+<hr>
+
+<details>
+<summary>🥨 Prefetch</summary>
+Increases performance of a system by <strong>pre-loading</strong> code pages of commonly used applications. Cache Manager monitors all files and directories referenced for each application or process and maps them into a <code>.pf</code> file. Utilized to know an application was executed on a system.
+
+<ul>
+<li><code>Limited to 128</code> files on <strong>XP</strong> and <strong>Win7</strong></li>
+<li><code>Limited to 1024</code> files on <strong>Win8</strong></li>
+<li><code>(exename)-(hash).pf</code></li>
+</ul>
+
+<h4>Location:</h4>
+<strong>WinXP/7/8/10</strong>:
+<pre><code>C:\Windows\Prefetch
+</code></pre>
+
+<h4>Interpretation:</h4>
+Each <code>.pf</code> will include <strong>last time of execution</strong>, <strong>number of times run</strong>, and device and file handles used by the program.
+
+Date/Time file by that name and path was first executed
+<ul><li>Creation Date of <code>.pf</code> file (-10 seconds)</li></ul>
+
+Date/Time file by that name and path was last executed
+<ul>
+<li>Embedded last execution time of <code>.pf</code> file</li>
+<li>Last modification date of <code>.pf</code> file (-10 seconds)</li>
+<li><strong>Win8-10</strong> will contain <strong>last 8 times of execution</strong></li>
+</ul>
+</details>
+
+</details>
+<hr>
+
+<details>
+<summary>🗃️ Deleted File or File Knowledge</summary>
+
+<details>
+<summary>👴 XP Search – ACMRU</summary>
+You can search for a wide range of information through the search assistant on a Windows XP machine. The search assistant will remember a user's search terms for <code>filenames</code>, <code>computers</code>, or <code>words</code> that are inside a file. This is an example of where you can find the "<strong>Search History</strong>" on the Windows system.
+
+<h4>Location:</h4>
+<strong>NTUSER.DAT HIVE</strong>
+<pre><code>NTUSER.DAT\Software\Microsoft\Search Assistant\ACMru\####
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Search the Internet – <code>####=5001</code></li>
+<li>All or part of a document name – <code>####=5603</code></li>
+<li>A word or phrase in a file – <code>####=5604</code></li>
+<li>Printers, Computers and People – <code>####=5647</code></li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🫰 Thumbcache</summary>
+<code>Thumbnails</code> of pictures, <code>office documents</code>, and <code>folders</code> exist in a database called the thumbcache. Each user will have their own database based on the thumbnail sizes viewed by the user (small, medium, large, and extra-large).
+
+<h4>Location:</h4>
+<pre><code>C:\%USERPROFILE%\AppData\Local\Microsoft\Windows\Explorer
+</code></pre>
+
+<h4>Interpretation:</h4>
+These are created when a user switches a folder to thumbnail mode or views pictures via a slide show. Win7+ has 4 sizes for thumbnails and the files in the cache folder reflect this:
+<ul>
+<li>32 -&gt; small</li>
+<li>96 -&gt; medium</li>
+<li>256 -&gt; large</li>
+<li>1024 -&gt; extra large</li>
+</ul>
+
+The thumbcache will store the thumbnail copy of the picture based on the thumbnail size in the content of the equivalent database file.
+</details>
+<hr>
+
+<details>
+<summary>👍 Thumbs.db</summary>
+Hidden file in directory where images on machine exist, stored as smaller thumbnail graphics. Thumbs.db catalogs pictures in a folder and stores a copy of the thumbnail <span style="color:red;"><strong>even if the pictures were deleted</strong></span>.
+
+<h4>Location:</h4>
+<strong>WinXP/Win8|8.1</strong>: Automatically created anywhere with homegroup enabled
+
+<strong>Win7/8/10</strong>: Automatically created anywhere and accessed via a UNC Path (local or remote)
+
+<h4>Interpretation:</h4>
+<strong>Includes</strong>:
+<ul>
+<li>Thumbnail Picture of Original Picture</li>
+<li>Document Thumbnail – <strong>Even if Deleted</strong></li>
+<li>Last Modification Time <code>(XP Only)</code></li>
+<li>Original Filename <code>(XP Only)</code></li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>📏 IE|Edge file://</summary>
+A little-known fact about the IE History is that the information stored in the history files is not just related to Internet browsing. The history also records local and remote (via network shares) file access, giving us an excellent means for determining which files and applications were accessed on the system, day by day.
+
+<h4>Location:</h4>
+<strong>Internet Explorer</strong>:
+
+<strong>IE6-7</strong>:
+<pre><code>%USERPROFILE%\LocalSettings\History\History.IE5
+</code></pre>
+<strong>IE8-9</strong>:
+<pre><code>%USERPROFILE%\AppData\Local\Microsoft\WindowsHistory\History.IE5
+</code></pre>
+<strong>IE10-11</strong>:
+<pre><code>%USERPROFILE%\AppData\Local\Microsoft\Windows\WebCache\WebCacheV*.dat
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Stored in index.dat as: <code>file:///C:/directory/filename.ext</code></li>
+<li>Does not mean the file was opened in the browser</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🔎 Search – WordWheelQuery</summary>
+Keywords searched for from the START menu bar on a Windows 7 machine.
+
+<h4>Location:</h4>
+<strong>Win7/8/10 NTUSER.DAT Hive</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\WordWheelQuery
+</code></pre>
+
+<h4>Interpretation:</h4>
+Keywords are added in Unicode and listed in temporal order in an MRUlist.
+</details>
+<hr>
+
+<details>
+<summary>🗑️ Win7/8/10 Recycle Bin</summary>
+The recycle bin is a very important location on a Windows file system to understand. It can help you when accomplishing a forensic investigation, as every file that is deleted from a Windows recycle-bin-aware program is generally first put in the recycle bin.
+
+<h4>Location:</h4>
+<strong>Hidden System Folder Win7/8/10</strong>:
+<pre><code>C:\$Recycle.bin
+</code></pre>
+
+Deleted Time and Original Filename are contained in separate files for each deleted/recovery file.
+
+<h4>Interpretation:</h4>
+<ul>
+<li>SID can be mapped to user via Registry Analysis</li>
+<li>Win7/8/10 - Files preceded by <code>$I######</code> contain the original <strong>PATH and name</strong> and <strong>Deletion Date/Time</strong></li>
+<li>Files preceded by <code>$R######</code> contain the <strong>Recovery Data</strong></li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🌜 Last-Visited MRU</summary>
+Tracks the specific executable used by an application to open the files documented in the OpenSaveMRU key. In addition, each value also tracks the directory location for the last file that was accessed by that application.
+
+<h4>Location:</h4>
+<strong>XP</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\LastVisitedMRU
+</code></pre>
+<strong>Win7/8/10</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\LastVisitedPidlMRU
+</code></pre>
+
+<h4>Interpretation:</h4>
+Tracks the application executables used to open files in OpenSaveMRU and the last file path used.
+</details>
+<hr>
+
+<details>
+<summary>⬇️ XP Recycle Bin</summary>
+The recycle bin is a very important location on a Windows file system to understand. It can help you when accomplishing a forensic investigation, as every file that is deleted from a Windows recycle-bin-aware program is generally first put in the recycle bin.
+
+<h4>Location:</h4>
+<strong>Hidden System Folder Windows XP</strong>:
+<ul>
+<li><code>C:\RECYCLER</code> 2000/NT/XP/2003</li>
+<li>Subfolder is created with user's SID</li>
+<li>Hidden file in directory called "INFO2"</li>
+<li>INFO2 contains Deleted Time and Original Filename</li>
+<li>Filename in both ASCII and UNICODE</li>
+</ul>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>SID can be mapped to user via Registry Analysis</li>
+<li>Maps file name to the actual name and path it was deleted from</li>
+</ul>
+</details>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+<details>
+<summary>⬇️ Main</summary>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+<hr>
+
+<details>
+<summary>⬇️ Sub</summary>
+
+</details>
+
+</details>
+
+</details>
+</div>
+</body>
+</html>
