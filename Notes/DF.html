@@ -679,341 +679,831 @@ The recycle bin is a very important location on a Windows file system to underst
 <hr>
 
 <details>
-<summary>⬇️ Main</summary>
+<summary>🕘 Network Activity/Physical Location</summary>
 
 <details>
-<summary>⬇️ Sub</summary>
+<summary>🕰️ Timezone</summary>
+Identifies the current system time zone.
+
+<h4>Location:</h4>
+<strong>SYSTEM Hive</strong>:
+<pre><code>SYSTEM\CurrentControlSet\Control\TimeZoneInformation
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Time activity is incredibly useful for correlation of activity</li>
+<li>Internal log files and date/timestamps will be based on the system time zone information</li>
+<li>You might have other network devices and you will need to correlate information to the time zone information collected here</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🍪 Cookies</summary>
+Cookies give insight into what websites have been visited and what activities may have taken place there.
+
+<h4>Location:</h4>
+<strong>Internet Explorer</strong>:
+<ul>
+<li>IE6-8: <code>%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Cookies</code></li>
+<li>IE10: <code>%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Cookies</code></li>
+<li>IE11: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\INetCookies</code></li>
+</ul>
+<strong>Firefox</strong>:
+<ul>
+<li>XP: <code>%USERPROFILE%\Application Data\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\cookies.sqlite</code></li>
+<li>Win7/8/10: <code>%USERPROFILE%\AppData\Roaming\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\cookies.sqlite</code></li>
+</ul>
+<strong>Chrome</strong>:
+<ul>
+<li>XP: <code>%USERPROFILE%\Local Settings\ApplicationData\Google\Chrome\User Data\Default\Local Storage</code></li>
+<li>Win7/8/10: <code>%USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default\Local Storage</code></li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>📶 Network History</summary>
+<h4>Description:</h4>
+<ul>
+<li>Identify networks that the computer has been connected to</li>
+<li>Networks could be wireless or wired</li>
+<li>Identify domain name/intranet name</li>
+<li>Identify SSID</li>
+<li>Identify Gateway MAC Address</li>
+</ul>
+
+<h4>Location:</h4>
+<strong>Win7/8/10 SOFTWARE Hive</strong>:
+<pre><code>SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\Unmanaged
+SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\Managed
+SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Nla\Cache
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Identifying intranets and networks that a computer has connected to is incredibly important</li>
+<li>Not only can you determine the intranet name, you can determine the last time the network was connected to it based on the last write time of the key</li>
+<li>This will also list any networks that have been connected to via a VPN</li>
+<li>MAC Address of SSID for Gateway could be physically triangulated</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>📡 WLAN Event Log</summary>
+Determine what wireless networks the system associated with and identify network characteristics to find location.
+
+<h4>Relevant Event IDs:</h4>
+<ul>
+<li>11000 - Wireless network association started</li>
+<li>8001 - Successful connection to wireless network</li>
+<li>8002 - Failed connection to wireless network</li>
+<li>8003 - Disconnect from wireless network</li>
+<li>6100 - Network diagnostics (System log)</li>
+</ul>
+
+<h4>Location:</h4>
+<pre><code>Microsoft-Windows-WLAN-AutoConfig%4Operational.evtx
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Shows historical record of wireless network connections</li>
+<li>Contains SSID and BSSID (MAC address), which can be used to geolocate wireless access point <em>(no BSSID on Win8+)</em></li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🔎 Browser Search Terms</summary>
+Records websites visited by date and time. Details stored for each local user account. Records number of times visited (frequency). Also tracks access of local system files. This will also include the website history of search terms in search engines.
+
+<h4>Location:</h4>
+<strong>Internet Explorer</strong>:
+<ul>
+<li>IE6-7: <code>%USERPROFILE%\Local Settings\History\History.IE5</code></li>
+<li>IE8-9: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\History\History.IE5</code></li>
+<li>IE10-11: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\WebCache\WebCacheV*.dat</code></li>
+</ul>
+<strong>Firefox</strong>:
+<ul>
+<li>XP: <code>%USERPROFILE%\Application Data\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\places.sqlite</code></li>
+<li>Win7/8/10: <code>%USERPROFILE%\AppData\Roaming\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\places.sqlite</code></li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🖥️ System Resource Usage Monitor (SRUM)</summary>
+Records 30 to 60 days of historical system performance. Applications run, user account responsible for each, and application and bytes sent/received per application per hour.
+
+<h4>Location:</h4>
+<pre><code>SOFTWARE\Microsoft\WindowsNT\CurrentVersion\SRUM\Extensions
+{973F5D5C-1D90-4944-BE8E-24B94231A174} = Windows Network Data Usage Monitor
+{DD6636C4-8929-4683-974E-22C046A43763} = Windows Network Connectivity Usage Monitor
+SOFTWARE\Microsoft\WlanSvc\Interfaces\
+C:\Windows\System32\SRU\
+</code></pre>
+
+<h4>Interpretation:</h4>
+Use a tool such as <code>srum_dump.exe</code> to cross correlate the data between the registry keys and the SRUM ESE Database.
+</details>
 
 </details>
 <hr>
 
 <details>
-<summary>⬇️ Sub</summary>
+<summary>📂 File/Folder Opening</summary>
+
+<details>
+<summary>🕒 Open/Save MRU</summary>
+In the simplest terms, this key tracks files that have been opened or saved within a Windows shell dialog box. This happens to be a big data set, not only including web browsers like Internet Explorer and Firefox, but also a majority of commonly used applications.
+
+<h4>Location:</h4>
+<strong>XP</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\OpenSaveMRU
+</code></pre>
+<strong>Win7/8/10</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\OpenSavePIDlMRU
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>The "*" key - This subkey tracks the most recent files of any extension input in an OpenSave dialog</li>
+<li>.??? (Three letter extension) - This subkey stores file info from the OpenSave dialog by specific extension</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>👜 Shell Bags</summary>
+Which folders were accessed on the local machine, the network, and/or removable devices. Evidence of previously existing folders after deletion/overwrite. When certain folders were accessed.
+
+<h4>Location:</h4>
+<strong>Explorer Access</strong>:
+<pre><code>USRCLASS.DAT\Local Settings\Software\Microsoft\Windows\Shell\BagMRU
+USRCLASS.DAT\Local Settings\Software\Microsoft\Windows\Shell\Bags
+</code></pre>
+<strong>Desktop Access</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\Shell\BagMRU
+NTUSER.DAT\Software\Microsoft\Windows\Shell\Bags
+</code></pre>
+
+<h4>Interpretation:</h4>
+Stores information about which folders were most recently browsed by the user.
+</details>
+<hr>
+
+<details>
+<summary>🦘 Jump Lists</summary>
+<ul>
+<li>The Windows 7 task bar (Jump List) is engineered to allow users to "jump" or access items they have frequently or recently used quickly and easily. This functionality cannot only include recent media files; it must also include recent tasks.</li>
+<li>The data stored in the AutomaticDestinations folder will each have a unique file prepended with the AppID of the associated application and embedded with LNK files in each stream.</li>
+</ul>
+
+<h4>Location:</h4>
+<strong>Win7/8/10</strong>:
+<pre><code>C:\%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Using the Structured Storage Viewer, open up one of the AutomaticDestination jumplist files.</li>
+<li>Each one of these files is a separate LNK file. They are also stored numerically in order from the earliest one (usually 1) to the most recent (largest integer value).</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>📁 Recent Files</summary>
+Registry Key that will track the last files and folders opened and is used to populate data in "Recent" menus of the Start menu.
+
+<h4>Location:</h4>
+<strong>NTUSER.DAT</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li><strong>RecentDocs</strong> — Overall key will track the overall order of the last 150 files or folders opened. MRU list will keep track of the temporal order in which each file/folder was opened. The last entry and modification time of this key will be the time and location the last file of a specific extension was opened.</li>
+<li><strong>.???</strong> — This subkey stores the last files with a specific extension that were opened. MRU list will keep track of the temporal order in which each file was opened. The last entry and modification time of this key will be the time when and location where the last file of a specific extension was opened.</li>
+<li><strong>Folder</strong> — This subkey stores the last folders that were opened. MRU list will keep track of the temporal order in which each folder was opened. The last entry and modification time of this key will be the time and location of the last folder opened.</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🔗 Shortcut (LNK) Files</summary>
+<ul>
+<li>Shortcut files automatically created by Windows for:
+<ul>
+<li>Recent Items</li>
+<li>Opening local and remote data files and documents will generate a shortcut file (.lnk)</li>
+</ul></li>
+</ul>
+
+<h4>Location:</h4>
+<strong>XP</strong>:
+<pre><code>C:\%USERPROFILE%\Recent
+</code></pre>
+<strong>Win7/8/10</strong>:
+<pre><code>C:\%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Recent
+C:\%USERPROFILE%\AppData\Roaming\Microsoft\Office\Recent
+</code></pre>
+Note these are primary locations of LNK files. They can also be found in other locations.
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Date/Time file of that name was first opened
+<ul><li>Creation Date of Shortcut (LNK) File</li></ul></li>
+<li>Date/Time file of that name was last opened
+<ul><li>Last Modification Date of Shortcut (LNK) File</li></ul></li>
+<li>LNK Target File (internal LNK File Information) Data:
+<ul>
+<li>Modified, Access, and Creation times of the target file</li>
+<li>Volume Information (Name, Type, Serial Number)</li>
+<li>Network Share information</li>
+<li>Original Location</li>
+<li>Name of System</li>
+</ul></li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🥨 Prefetch</summary>
+Increases performance of a system by pre-loading code pages of commonly used applications. Cache Manager monitors all files and directories referenced for each application or process and maps them into a <code>.pf</code> file. Utilized to know an application was executed on a system.
+
+<ul>
+<li>Limited to 128 files on XP and Win7</li>
+<li>Limited to 1024 files on Win8-10</li>
+<li><code>(exename)-(hash).pf</code></li>
+</ul>
+
+<h4>Location:</h4>
+<strong>WinXP/7/8/10</strong>:
+<pre><code>C:\Windows\Prefetch
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Can examine each .pf file to look for file handles recently used</li>
+<li>Can examine each .pf file to look for device handles recently used</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>⏮️ Last-Visited MRU</summary>
+Tracks the specific executable used by an application to open the files documented in the OpenSaveMRU key. In addition, each value also tracks the directory location for the last file that was accessed by that application.
+
+<strong>Example</strong>: Notepad.exe was last run using the <code>C:\Users\Rob\Desktop</code> folder
+
+<h4>Location:</h4>
+<strong>XP</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\LastVisitedMRU
+</code></pre>
+<strong>Win7/8/10</strong>:
+<pre><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\LastVisitedPidlMRU
+</code></pre>
+
+<h4>Interpretation:</h4>
+Tracks the application executables used to open files in OpenSaveMRU and the last file path used.
+</details>
+<hr>
+
+<details>
+<summary>📏 IE|Edge file://</summary>
+A little known fact about the IE History is that the information stored in the history files is not just related to Internet browsing. The history also records local, removable, and remote (via network shares) file access, giving us an excellent means for determining which files and applications were accessed on the system, day by day.
+
+<h4>Location:</h4>
+<strong>Internet Explorer</strong>:
+<ul>
+<li>IE6-7: <code>%USERPROFILE%\Local Settings\History\History.IE5</code></li>
+<li>IE8-9: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\History\History.IE5</code></li>
+<li>IE10-11: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\WebCache\WebCacheV*.dat</code></li>
+</ul>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Stored in index.dat as: <code>file:///C:/directory/filename.ext</code></li>
+<li>Does not mean the file was opened in the browser</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>📎 Office Recent Files</summary>
+MS Office programs will track their own Recent Files list to make it easier for users to remember the last files they were editing.
+
+<h4>Location:</h4>
+<pre><code>NTUSER.DAT\Software\Microsoft\Office\&lt;VERSION&gt;\&lt;Application&gt;\User MRU\LiveID_####\FileMRU
+</code></pre>
+<ul>
+<li>10.0 = Office 2003</li>
+<li>11.0 = Office XP</li>
+<li>12.0 = Office 2007</li>
+<li>14.0 = Office 2010</li>
+<li>15.0 = Office 365</li>
+</ul>
+
+<h4>Interpretation:</h4>
+Similar to the Recent Files, this will track the last files that were opened by each MS Office application. The last entry, added to the MRU, will be the time the last file was opened by a specific MS Office application.
+</details>
 
 </details>
 <hr>
 
 <details>
-<summary>⬇️ Sub</summary>
+<summary>👤 Account Usage</summary>
+
+<details>
+<summary>🔑 Last Login</summary>
+Lists the local accounts of the system and their equivalent security identifiers.
+
+<h4>Location:</h4>
+<pre><code>C:\windows\system32\config\SAM -> SAM\Domains\Account\Users
+</code></pre>
+
+<h4>Interpretation:</h4>
+Only the last login time will be stored in the registry key.
+</details>
+<hr>
+
+<details>
+<summary>🔐 Last Password Change</summary>
+Lists the last time the password of a specific local user has changed.
+
+<h4>Location:</h4>
+<pre><code>C:\windows\system32\config\SAM -> SAM\Domains\Account\Users
+</code></pre>
+
+<h4>Interpretation:</h4>
+Only the last password change time will be stored in the registry key.
+</details>
+<hr>
+
+<details>
+<summary>🖧 RDP Usage</summary>
+Track Remote Desktop Protocol logons to target machines.
+
+<h4>Location:</h4>
+<strong>Security Log</strong> — <strong>Win7/8/10</strong>:
+<pre><code>%SYSTEM ROOT%\System32\winevt\logs\Security.evtx
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Event ID 4778 - Session Connected/Reconnected</li>
+<li>Event ID 4779 - Session Disconnected</li>
+<li>Event log provides hostname and IP address of remote machine making the connection</li>
+<li>On workstations you will often see current console session disconnected (4779) followed by RDP connection (4778)</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>⚙️ Services Events</summary>
+<ul>
+<li>Analyze logs for suspicious services running at boot time</li>
+<li>Review services started or stopped around the time of a suspected compromise</li>
+</ul>
+
+<h4>Location:</h4>
+All Event IDs reference the System Log.
+<ul>
+<li>7034 — Service crashed unexpectedly</li>
+<li>7035 - Service sent a Start/Stop control</li>
+<li>7036 - Service started or stopped</li>
+<li>7040 - Start type changed (Boot | On Request | Disabled)</li>
+<li>7045 - A service was installed on the system (Win2008R2+)</li>
+<li>4697 — A service was installed on the system (from Security log)</li>
+</ul>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>All Event IDs except 4697 reference the System Log</li>
+<li>A large amount of malware and worms in the wild utilize Services</li>
+<li>Services started on boot illustrate persistence (desirable in malware)</li>
+<li>Services can crash due to attacks like process injection</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🚪 Logon Types</summary>
+Logon Events can give us very specific information regarding the nature of account authorizations on a system if we know where to look and how to decipher the data that we find. In addition to telling us the date, time, username, hostname, and success/failure status of a logon, Logon Events also enable us to determine by exactly what means a logon was attempted.
+
+<h4>Location:</h4>
+<strong>Win7/8/10</strong> — Event ID 4624
+
+<h4>Interpretation:</h4>
+<table>
+<thead>
+<tr><th>Logon Type</th><th>Explanation</th></tr>
+</thead>
+<tbody>
+<tr><td>2</td><td>Logon via console</td></tr>
+<tr><td>3</td><td>Network Logon</td></tr>
+<tr><td>4</td><td>Batch Logon</td></tr>
+<tr><td>5</td><td>Windows Service Logon</td></tr>
+<tr><td>7</td><td>Credentials used to unlock screen</td></tr>
+<tr><td>8</td><td>Network logon sending credentials (cleartext)</td></tr>
+<tr><td>9</td><td>Different credentials used than logged on user</td></tr>
+<tr><td>10</td><td>Remote interactive logon (RDP)</td></tr>
+<tr><td>11</td><td>Cached credentials used to logon</td></tr>
+<tr><td>12</td><td>Cached remote interactive (similar to Type 10)</td></tr>
+<tr><td>13</td><td>Cached unlock (similar to Type 7)</td></tr>
+</tbody>
+</table>
+</details>
+<hr>
+
+<details>
+<summary>🛡️ Authentication Events</summary>
+Authentication mechanisms.
+
+<h4>Location:</h4>
+Recorded on system that authenticated credentials.
+<ul>
+<li>Local Account/Workgroup = on workstation</li>
+<li>Domain/Active Directory = on domain controller</li>
+</ul>
+<strong>Win7/8/10</strong>:
+<pre><code>%SYSTEM ROOT%\System32\winevt\logs\Security.evtx
+</code></pre>
+
+<h4>Interpretation:</h4>
+Event ID Codes (NTLM protocol):
+<ul>
+<li>4776: Successful/Failed account authentication</li>
+</ul>
+Event ID Codes (Kerberos protocol):
+<ul>
+<li>4768: Ticket Granting Ticket was granted (successful logon)</li>
+<li>4769: Service Ticket requested (access to server resource)</li>
+<li>4771: Pre-authentication failed (failed logon)</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>✅ Success/Fail Logons</summary>
+Determine which accounts have been used for attempted logons. Track account usage for known compromised accounts.
+
+<h4>Location:</h4>
+<strong>Win7/8/10</strong>:
+<pre><code>%SYSTEM ROOT%\System32\winevt\logs\Security.evtx
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>4624 — Successful Logon</li>
+<li>4625 — Failed Logon</li>
+<li>4634 | 4647 - Successful Logoff</li>
+<li>4648 - Logon using explicit credentials (Runas)</li>
+<li>4672 - Account logon with superuser rights (Administrator)</li>
+<li>4720 - An account was created</li>
+</ul>
+</details>
 
 </details>
 <hr>
 
 <details>
-<summary>⬇️ Sub</summary>
+<summary>🔌 External Device/USB Usage</summary>
+
+<details>
+<summary>🔑 Key Identification</summary>
+Track USB devices plugged into a machine.
+
+<h4>Location:</h4>
+<pre><code>SYSTEM\CurrentControlSet\Enum\USBSTOR
+SYSTEM\CurrentControlSet\Enum\USB
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Identify vendor, product, and version of a USB device plugged into a machine</li>
+<li>Identify a unique USB device plugged into the machine</li>
+<li>Determine the time a device was plugged into the machine</li>
+<li>Devices that do not have a unique serial number will have an "&amp;" in the second character of the serial number.</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🔔 PnP Events</summary>
+When a Plug and Play driver install is attempted, the service will log an event ID 20001 event and provide a Status within the event. It is important to note that this event will trigger for any Plug and Play-capable device, including but not limited to USB, Firewire, and PCMCIA devices.
+
+<h4>Location:</h4>
+<strong>System Log File</strong> — <strong>Win7/8/10</strong>:
+<pre><code>%SYSTEM ROOT%\System32\winevt\logs\System.evtx
+</code></pre>
+
+<h4>Interpretation:</h4>
+Event ID: 20001 — Plug and Play driver install attempted. Event ID 20001 Data:
+<ul>
+<li>Timestamp</li>
+<li>Device information</li>
+<li>Device serial number</li>
+<li>Status (0 = no errors)</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>💽 Drive Letter and Volume Name</summary>
+Discover the last drive letter of the USB Device when it was plugged into the machine.
+
+<h4>Location:</h4>
+<strong>XP</strong>:
+<ul>
+<li>Find ParentIdPrefix — <code>SYSTEM\CurrentControlSet\Enum\USBSTOR</code></li>
+<li>Using ParentIdPrefix Discover — <code>SYSTEM\MountedDevices</code></li>
+</ul>
+<strong>Win7/8/10</strong>:
+<ul>
+<li><code>SOFTWARE\Microsoft\Windows Portable Devices\Devices</code></li>
+<li><code>SYSTEM\MountedDevices</code> - Examine Drive Letters looking at Value Data, looking for Serial Number</li>
+</ul>
+
+<h4>Interpretation:</h4>
+Identify the USB device that was last mapped to a specific drive letter. This technique will only work for the last drive mapped. It does not contain historical records of every drive letter mapped to a removable drive.
+</details>
+<hr>
+
+<details>
+<summary>⏱️ First/Last Times</summary>
+Determine temporal usage of specific USB devices connected to a Windows Machine.
+
+<h4>Location — First Time (Plug and Play Log Files):</h4>
+<strong>XP</strong>:
+<pre><code>C:\Windows\setupapi.log
+</code></pre>
+<strong>Win7/8/10</strong>:
+<pre><code>C:\Windows\inf\setupapi.dev.log
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Search for Device Serial Number</li>
+<li>Log File times are set to local time zone</li>
+</ul>
+
+<h4>Location — First, Last, and Removal Times (Win7/8/10 Only):</h4>
+<strong>System Hive</strong>:
+<pre><code>SYSTEM\CurrentControlSet\Enum\USBSTOR\&lt;Ven_Prod_Version&gt;\&lt;USBSerial#&gt;\Properties\
+{83da6326-97a6-4088-9453-a19231573b29}\####
+</code></pre>
+<ul>
+<li>0064 = First Install (Win7-10)</li>
+<li>0066 = Last Connected (Win8-10)</li>
+<li>0067 = Last Removal (Win8-10)</li>
+</ul>
+</details>
+<hr>
+
+<details>
+<summary>🔢 Volume Serial Number</summary>
+Discover the Volume Serial Number of the Filesystem Partition on the USB. <em>(NOTE: This is not the USB Unique Serial Number, which is hardcoded into the device firmware.)</em>
+
+<h4>Location:</h4>
+<pre><code>SOFTWARE\Microsoft\WindowsNT\CurrentVersion\EMDMgmt
+</code></pre>
+Use Volume Name and USB Unique Serial Number to:
+<ul>
+<li>Find last integer number in line</li>
+<li>Convert Decimal Serial Number into Hex Serial Number</li>
+</ul>
+
+<h4>Interpretation:</h4>
+Knowing both the Volume Serial Number and the Volume Name, you can correlate the data across SHORTCUT File (LNK) analysis and the RecentDocs key. The Shortcut File (LNK) contains the Volume Serial Number and Name. The RecentDocs Registry Key, in most cases, will contain the volume name when the USB device is opened via Explorer.
+</details>
+<hr>
+
+<details>
+<summary>🙋 User</summary>
+Find the user that used the unique USB Device.
+
+<h4>Location:</h4>
+<ul>
+<li>Look for GUID from <code>SYSTEM\MountedDevices</code></li>
+<li><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2</code></li>
+</ul>
+
+<h4>Interpretation:</h4>
+This GUID will be used next to identify the user that plugged in the device. The last write time of this key also corresponds to the last time the device was plugged into the machine by that user. The number will be referenced in the user's personal mountpoints key in the NTUSER.DAT Hive.
+</details>
+<hr>
+
+<details>
+<summary>🔗 Shortcut (LNK) Files</summary>
+<ul>
+<li>Shortcut files automatically created by Windows for:
+<ul>
+<li>Recent Items</li>
+<li>Opening local and remote data files and documents will generate a shortcut file (.lnk)</li>
+</ul></li>
+</ul>
+
+<h4>Location:</h4>
+<strong>XP</strong>:
+<pre><code>%USERPROFILE%\Recent
+</code></pre>
+<strong>Win7/8/10</strong>:
+<pre><code>%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Recent
+%USERPROFILE%\AppData\Roaming\Microsoft\Office\Recent
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Date/Time file of that name was first opened
+<ul><li>Creation Date of Shortcut (LNK) File</li></ul></li>
+<li>Date/Time file of that name was last opened
+<ul><li>Last Modification Date of Shortcut (LNK) File</li></ul></li>
+<li>LNK Target File (Internal LNK File Information) Data:
+<ul>
+<li>Modified, Access, and Creation times of the target file</li>
+<li>Volume Information (Name, Type, Serial Number)</li>
+<li>Network Share information</li>
+<li>Original Location</li>
+<li>Name of System</li>
+</ul></li>
+</ul>
+</details>
 
 </details>
 <hr>
 
 <details>
-<summary>⬇️ Sub</summary>
-
-</details>
-
-</details>
+<summary>🌐 Browser Usage</summary>
 
 <details>
-<summary>⬇️ Main</summary>
+<summary>📜 History</summary>
+Records websites visited by date and time. Details stored for each local user account. Records number of times visited (frequency). Also tracks access of local system files.
 
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
+<h4>Location:</h4>
+<strong>Internet Explorer</strong>:
+<ul>
+<li>IE6-7: <code>%USERPROFILE%\Local Settings\History\History.IE5</code></li>
+<li>IE8-9: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\History\History.IE5</code></li>
+<li>IE10, Edge: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\WebCache\WebCacheV*.dat</code></li>
+</ul>
+<strong>Firefox</strong>:
+<ul>
+<li>XP: <code>%USERPROFILE%\Application Data\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\places.sqlite</code></li>
+<li>Win7/8/10: <code>%USERPROFILE%\AppData\Roaming\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\places.sqlite</code></li>
+</ul>
+<strong>Chrome</strong>:
+<ul>
+<li>XP: <code>%USERPROFILE%\Local Settings\Application Data\Google\Chrome\User Data\Default\History</code></li>
+<li>Win7/8/10: <code>%USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default\History</code></li>
+</ul>
 </details>
 <hr>
 
 <details>
-<summary>⬇️ Sub</summary>
+<summary>🍪 Cookies</summary>
+Cookies give insight into what websites have been visited and what activities may have taken place there.
 
-</details>
-
-</details>
-
-<details>
-<summary>⬇️ Main</summary>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
+<h4>Location:</h4>
+<strong>Internet Explorer</strong>:
+<pre><code>%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Cookies
+%USERPROFILE%\AppData\Local\Microsoft\Windows\INetCookies
+%USERPROFILE%\AppData\Local\Packages\microsoft.microsoftedge_&lt;APPID&gt;\AC\MicrosoftEdge\Cookies
+</code></pre>
+<strong>Firefox</strong>:
+<ul>
+<li>XP: <code>%USERPROFILE%\Application Data\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\cookies.sqlite</code></li>
+<li>Win7/8/10: <code>%USERPROFILE%\AppData\Roaming\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\cookies.sqlite</code></li>
+</ul>
+<strong>Chrome</strong>:
+<ul>
+<li>XP: <code>%USERPROFILE%\Local Settings\Application Data\Google\Chrome\User Data\Default\Local Storage</code></li>
+<li>Win7/8/10: <code>%USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default\Local Storage</code></li>
+</ul>
 </details>
 <hr>
 
 <details>
-<summary>⬇️ Sub</summary>
+<summary>🍯 Flash &amp; Super Cookies</summary>
+Local Stored Objects (LSOs), or Flash Cookies, have become ubiquitous on most systems due to the extremely high penetration of Flash applications across the Internet.
+<ul>
+<li>They tend to be much more persistent because they do not expire, and there is no built-in mechanism within the browser to remove them. In fact, many sites have begun using LSOs for their tracking mechanisms because they rarely get cleared like traditional cookies.</li>
+</ul>
 
+<h4>Location:</h4>
+<strong>Win7/8/10</strong>:
+<pre><code>%APPDATA%\Roaming\Macromedia\FlashPlayer\#SharedObjects\&lt;random profile id&gt;
+</code></pre>
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Websites visited</li>
+<li>User account used to visit the site</li>
+<li>When cookie was created and last accessed</li>
+</ul>
 </details>
 <hr>
 
 <details>
-<summary>⬇️ Sub</summary>
+<summary>🗄️ Cache</summary>
+<h4>Description:</h4>
+<ul>
+<li>The cache is where web page components can be stored locally to speed up subsequent visits</li>
+<li>Gives the investigator a "snapshot in time" of what a user was looking at online
+<ul>
+<li>Identifies websites which were visited</li>
+<li>Provides the actual files the user viewed on a website</li>
+<li>Cached files are tied to a specific local user account</li>
+<li>Timestamps show when the site was first saved and last viewed</li>
+</ul></li>
+</ul>
 
-</details>
-
-</details>
-
-<details>
-<summary>⬇️ Main</summary>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-
-</details>
-
-<details>
-<summary>⬇️ Main</summary>
-
-<details>
-<summary>⬇️ Sub</summary>
-
+<h4>Location:</h4>
+<strong>Internet Explorer</strong>:
+<ul>
+<li>IE8-9: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\Temporary Internet Files\Content.IE5</code></li>
+<li>IE10: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\Temporary Internet Files\Content.IE5</code></li>
+<li>IE11: <code>%USERPROFILE%\AppData\Local\Microsoft\Windows\INetCache\IE</code></li>
+<li>Edge: <code>%USERPROFILE%\AppData\Local\Packages\microsoft.microsoftedge_&lt;APPID&gt;\AC\MicrosoftEdge\Cache</code></li>
+</ul>
+<strong>Firefox</strong>:
+<ul>
+<li>XP: <code>%USERPROFILE%\Local Settings\ApplicationData\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\Cache</code></li>
+<li>Win7/8/10: <code>%USERPROFILE%\AppData\Local\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\Cache</code></li>
+</ul>
+<strong>Chrome</strong>:
+<ul>
+<li>XP: <code>%USERPROFILE%\Local Settings\Application Data\Google\Chrome\User Data\Default\Cache</code> - <code>data_#</code> and <code>f_######</code></li>
+<li>Win7/8/10: <code>%USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default\Cache</code> - <code>data_#</code> and <code>f_######</code></li>
+</ul>
 </details>
 <hr>
 
 <details>
-<summary>⬇️ Sub</summary>
+<summary>♻️ Session Restore</summary>
+Automatic Crash Recovery features built into the browser.
 
+<h4>Location:</h4>
+<strong>Internet Explorer</strong> — <strong>Win7/8/10</strong>:
+<pre><code>%USERPROFILE%\AppData\Local\Microsoft\Internet Explorer\Recovery
+</code></pre>
+<strong>Firefox</strong> — <strong>Win7/8/10</strong>:
+<pre><code>%USERPROFILE%\AppData\Roaming\Mozilla\Firefox\Profiles\&lt;random text&gt;.default\sessionstore.js
+</code></pre>
+<strong>Chrome</strong> — <strong>Win7/8/10</strong>:
+<pre><code>%USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default\
+</code></pre>
+Current Session, Current Tabs, Last Session, Last Tabs
+
+<h4>Interpretation:</h4>
+<ul>
+<li>Historical websites viewed in each tab</li>
+<li>Referring websites</li>
+<li>Time session ended</li>
+<li>Modified time of .dat files in LastActive folder</li>
+<li>Time each tab opened (only when crash occurred)</li>
+<li>Creation time of .dat files in Active folder</li>
+</ul>
 </details>
 <hr>
 
 <details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-
-</details>
-
-<details>
-<summary>⬇️ Main</summary>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-
-</details>
-
-<details>
-<summary>⬇️ Main</summary>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-
-</details>
-
-<details>
-<summary>⬇️ Main</summary>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-
-</details>
-
-<details>
-<summary>⬇️ Main</summary>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-
-</details>
-
-<details>
-<summary>⬇️ Main</summary>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
-</details>
-<hr>
-
-<details>
-<summary>⬇️ Sub</summary>
-
+<summary>📊 Google Analytics Cookies</summary>
+Google Analytics (GA) has developed an extremely sophisticated methodology for tracking site visits, user activity, and paid search. Since GA is largely free, it has a commanding share of the market, estimated at over 80% of sites using traffic analysis and over 50% of all sites.
+
+<h4>Interpretation:</h4>
+<strong>__utma - Unique visitors</strong>
+<ul>
+<li>Domain Hash</li>
+<li>Visitor ID</li>
+<li>Cookie Creation Time</li>
+<li>Time of 2nd most recent visit</li>
+<li>Time of most recent visit</li>
+<li>Number of visits</li>
+</ul>
+<strong>__utmb - Session tracking</strong>
+<ul>
+<li>Domain hash</li>
+<li>Page views in current session</li>
+<li>Outbound link clicks</li>
+<li>Time current session started</li>
+</ul>
+<strong>__utmz - Traffic sources</strong>
+<ul>
+<li>Domain Hash</li>
+<li>Last Update time</li>
+<li>Number of visits</li>
+<li>Number of different types of visits</li>
+<li>Source used to access site</li>
+<li>Google Adwords campaign name</li>
+<li>Access Method (organic, referral, cpc, email, direct)</li>
+<li>Keyword used to find site (non-SSL only)</li>
+</ul>
 </details>
 
 </details>
