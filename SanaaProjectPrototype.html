@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة الرصد الفكري الرقمي | Intellect Governance Radar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Cairo', 'Inter', sans-serif; }
+        .en-mode { font-family: 'Inter', 'Cairo', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 transition-all duration-300">
+
+    <header id="main-header" class="bg-gradient-to-r from-emerald-800 to-teal-700 text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="bg-white p-2 rounded-lg shadow-inner flex items-center justify-center">
+                    <i class="fa-solid fa-gavel text-2xl text-emerald-700"></i>
+                </div>
+                <div>
+                    <h1 id="app-title" class="text-xl font-bold tracking-wide">منصة الرصد الفكري الرقمي</h1>
+                    <p id="app-subtitle" class="text-xs text-emerald-100">جامعة جازان - إدارة المراجعة والتحقق النظامي المستقل</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button id="lang-toggle" onclick="toggleLanguage()" class="bg-emerald-900/40 hover:bg-emerald-900/80 px-3 py-1.5 rounded-lg border border-emerald-500/30 text-sm font-semibold transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>English</span>
+                </button>
+                
+                <div id="user-profile-nav" class="hidden flex items-center gap-3 border-r border-emerald-600/50 pr-4">
+                    <div class="text-right">
+                        <div id="nav-username" class="text-sm font-semibold">د. سناء صيري</div>
+                        <div id="nav-userrole" class="text-xs text-emerald-200">جهة مخولة نظاماً</div>
+                    </div>
+                    <button onclick="logout()" class="text-rose-200 hover:text-rose-400 p-2 rounded-lg text-sm transition cursor-pointer" title="تسجيل الخروج">
+                        <i class="fa-solid fa-right-from-bracket text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="public-candidate-portal" class="hidden container mx-auto px-4 py-12 max-w-3xl">
+        <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 space-y-6">
+            <div class="text-center border-b pb-6">
+                <div class="inline-flex p-4 bg-emerald-50 rounded-full text-emerald-600 mb-3">
+                    <i class="fa-solid fa-user-shield text-4xl"></i>
+                </div>
+                <h2 id="pub-title" class="text-2xl font-bold text-gray-800">بوابة استكمال بيانات التدقيق والتحقق الرقمي</h2>
+                <p id="pub-desc" class="text-sm text-gray-500 mt-2">عزيزي المرشح، يرجى تزويدنا ببياناتك الرسمية وروابط حساباتك بدقة. يتاح استخدام هذا الرابط المخصص لك لمرة واحدة فقط.</p>
+            </div>
+            
+            <div id="public-form-container">
+                <form id="public-survey-form" onsubmit="handlePublicFormSubmit(event)" class="space-y-6">
+                    <div>
+                        <h3 class="text-md font-bold text-emerald-700 mb-3"><i class="fa-solid fa-address-card"></i> البيانات الشخصية المطلوبة</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-600">الاسم الرباعي الكامل</label>
+                                <input type="text" required id="p-name" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-600">رقم الهوية الوطنية / الإقامة</label>
+                                <input type="text" required id="p-national-id" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-600">المسمى الوظيفي الحالي</label>
+                                <input type="text" required id="p-job" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-600">الغرض من التقديم</label>
+                                <input type="text" readonly id="p-purpose" class="w-full p-2.5 rounded-lg border border-gray-200 bg-gray-100 font-medium text-gray-700">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-md font-bold text-emerald-700 mb-1"><i class="fa-solid fa-share-nodes"></i> روابط الأدلة والحسابات الرقمية النشطة (Artifacts)</h3>
+                        <p class="text-xs text-gray-400 mb-2">أدخل كافة روابط منصات التواصل الاجتماعي الخاصة بك أو أي مواقع إلكترونية تملكها (رابط واحد في كل سطر)</p>
+                        <textarea id="p-links" rows="4" required placeholder="https://x.com/your_username&#10;https://linkedin.com/in/your_username" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-left placeholder:text-right placeholder:md:text-left"></textarea>
+                    </div>
+
+                    <div class="border-t pt-4 flex justify-end">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3 rounded-xl shadow-md transition cursor-pointer flex items-center gap-2">
+                            <i class="fa-solid fa-check-double"></i>
+                            <span id="pub-btn-text">إرسال البيانات واعتماد الطلب</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div id="public-lock-message" class="hidden text-center py-12 space-y-4">
+                <i class="fa-solid fa-circle-lock text-6xl text-amber-500 animate-bounce"></i>
+                <h3 id="pub-lock-title" class="text-xl font-bold text-gray-800">عذراً، الرابط لم يعد فعالاً!</h3>
+                <p id="pub-lock-desc" class="text-sm text-gray-500 max-w-md mx-auto">تم استلام بيانات هذا الرابط المخصص مسبقاً بنجاح وتم قفله حوكمياً لحماية البيانات من التكرار.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-screen" class="container mx-auto px-4 py-16 flex justify-center items-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+            <div class="text-center mb-8">
+                <i class="fa-solid fa-shield-halved text-5xl text-emerald-600 mb-3"></i>
+                <h2 id="login-title" class="text-2xl font-bold text-gray-800">بوابة الدخول الموحدة</h2>
+                <p id="login-desc" class="text-sm text-gray-500 mt-1">الهوية الرقمية للجامعة</p>
+            </div>
+
+
+            <div class="mb-5">
+                <label id="lbl-uid" class="block text-sm font-semibold mb-2 text-gray-700">اسم المستخدم / الرقم الأكاديمي</label>
+                <input type="text" id="login-id" value="admin_jazanu" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-right">
+            </div>
+
+            <div class="mb-6">
+                <label id="lbl-pwd" class="block text-sm font-semibold mb-2 text-gray-700">كلمة المرور</label>
+                <input type="password" id="login-pass" value="password123" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-right">
+            </div>
+
+            <button type="button" onclick="login()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition cursor-pointer flex justify-center items-center gap-2">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span id="btn-login">تسجيل الدخول الآمن</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden min-h-screen flex flex-col md:flex-row">
+        
+        <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col border-t md:border-t-0 border-slate-800">
+            <div class="p-4 bg-slate-950 flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span id="system-status" class="text-xs text-slate-400 font-mono">نظام المراجعة النظامية نشط</span>
+            </div>
+            <nav class="flex-1 p-3 space-y-1">
+                <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600 text-white font-medium transition cursor-pointer">
+                    <i class="fa-solid fa-chart-pie w-5"></i>
+                    <span id="m-dash">المؤشرات والتقارير</span>
+                </button>
+                <button onclick="switchTab('survey')" id="tab-btn-survey" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-file-signature w-5"></i>
+                    <span id="m-survey">نموذج المسح الفكري</span>
+                </button>
+                <button onclick="switchTab('analysis')" id="tab-btn-analysis" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-magnifying-glass-lines w-5"></i>
+                    <span id="m-ai">لوحة الفحص والتدقيق</span>
+                </button>
+                <button onclick="switchTab('archive')" id="tab-btn-archive" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-box-archive w-5"></i>
+                    <span id="m-archive">أرشيف الحالات</span>
+                </button>
+            </nav>
+            <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+                <span>V2.7 © 2026 جميع الحقوق محفوظة</span>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 md:p-8 bg-gray-50 overflow-y-auto">
+            
+            <section id="sect-dashboard" class="tab-content space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 id="dash-title" class="text-2xl font-bold text-gray-800">لوحة الإحصاءات والمؤشرات التفاعلية</h2>
+                        <p id="dash-subtitle" class="text-sm text-gray-500">متابعة فورية ومؤشرات لدعم اتخاذ القرار المبني على البيانات</p>
+                    </div>
+                    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 text-xs text-gray-500">
+                        <i class="fa-solid fa-clock"></i> <span id="live-time">تحديث فوري: يونيو 2026</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div>
+                            <p id="c-total-lbl" class="text-sm text-gray-400 font-medium">إجمالي طلبات المسح</p>
+                            <h3 id="stat-total" class="text-3xl font-bold text-gray-800 mt-1">0</h3>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-xl text-blue-600"><i class="fa-solid fa-folder-open text-2xl"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div>
+                            <p id="c-clean-lbl" class="text-sm text-gray-400 font-medium">لا توجد ملاحظات</p>
+                            <h3 id="stat-clean" class="text-3xl font-bold text-emerald-600 mt-1">0</h3>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-xl text-emerald-600"><i class="fa-solid fa-circle-check text-2xl"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div>
+                            <p id="c-review-lbl" class="text-sm text-gray-400 font-medium">قيد المراجعة والتحليل</p>
+                            <h3 id="stat-pending" class="text-3xl font-bold text-amber-500 mt-1">0</h3>
+                        </div>
+                        <div class="bg-amber-50 p-4 rounded-xl text-amber-500"><i class="fa-solid fa-user-gear text-2xl"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div>
+                            <p id="c-risk-lbl" class="text-sm text-gray-400 font-medium">حالات مرتفعة الخطورة</p>
+                            <h3 id="stat-critical" class="text-3xl font-bold text-rose-600 mt-1">0</h3>
+                        </div>
+                        <div class="bg-rose-50 p-4 rounded-xl text-rose-600"><i class="fa-solid fa-triangle-exclamation text-2xl"></i></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
+                        <h4 id="chart1-title" class="text-lg font-bold text-gray-800 mb-4">تصنيف المخالفات الفكرية المرصودة</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1"><span id="cat-1">ما يمس أمن الدولة ووحدة المجتمع</span><span id="bar-v1" class="font-semibold text-slate-700">0%</span></div>
+                                <div class="w-full bg-gray-100 h-2.5 rounded-full"><div id="bar-1" class="bg-rose-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1"><span id="cat-2">التطرف والانحراف الفكري</span><span id="bar-v2" class="font-semibold text-slate-700">0%</span></div>
+                                <div class="w-full bg-gray-100 h-2.5 rounded-full"><div id="bar-2" class="bg-orange-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1"><span id="cat-3">الأمن السيبراني والجرائم المعلوماتية</span><span id="bar-v3" class="font-semibold text-slate-700">0%</span></div>
+                                <div class="w-full bg-gray-100 h-2.5 rounded-full"><div id="bar-3" class="bg-amber-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1"><span id="cat-4">الشائعات والتضليل الإعلامي</span><span id="bar-v4" class="font-semibold text-slate-700">0%</span></div>
+                                <div class="w-full bg-gray-100 h-2.5 rounded-full"><div id="bar-4" class="bg-yellow-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h4 id="chart2-title" class="text-lg font-bold text-gray-800 mb-4">توزيع مستويات الخطورة الراهنة</h4>
+                        <div class="flex flex-col h-full justify-around space-y-3 pb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-4 h-4 rounded bg-red-600"></div>
+                                <div class="flex-1 flex justify-between"><span id="r-vhigh">مرتفع جداً</span><span id="count-vhigh" class="font-bold">0</span></div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-4 h-4 rounded bg-orange-500"></div>
+                                <div class="flex-1 flex justify-between"><span id="r-high">مرتفع</span><span id="count-high" class="font-bold">0</span></div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-4 h-4 rounded bg-amber-400"></div>
+                                <div class="flex-1 flex justify-between"><span id="r-mid">متوسط</span><span id="count-mid" class="font-bold">0</span></div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-4 h-4 rounded bg-emerald-500"></div>
+                                <div class="flex-1 flex justify-between"><span id="r-low">منخفض</span><span id="count-low" class="font-bold">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sect-survey" class="tab-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 id="form-title" class="text-2xl font-bold text-gray-800">قسم نماذج المسح الفكري الإلكترونية</h2>
+                        <p id="form-subtitle" class="text-sm text-gray-500">إدخال البيانات المباشر أو إنشاء روابط خارجية مخصصة للمستهدفين لتعبئتها بأنفسهم لمرة واحدة</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6 rounded-2xl shadow-md border border-slate-700 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-emerald-600/20 text-emerald-400 rounded-xl border border-emerald-500/30">
+                            <i class="fa-solid fa-link-slash text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-md font-bold">مولد الروابط الخارجية المستقلة (خيار عدم طلب تسجيل دخول)</h3>
+                            <p class="text-xs text-slate-400">أنشئ رابطاً مشفراً خاصاً بالمرشح ليقوم بإدخال روابطه بنفسه وتُقفل تلقائياً بعد استلامها</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-300">الغرض من توليد الرابط</label>
+                            <select id="gen-purpose" class="w-full p-2.5 rounded-lg border border-slate-700 bg-slate-800 text-sm focus:ring-1 focus:ring-emerald-500 text-white">
+                                <option value="تعيين">تعيين أكاديمي / إداري</option>
+                                <option value="ترقية">ترقية علمية / وظيفية</option>
+                                <option value="منصب قيادي">تكليف بمنصب قيادي</option>
+                                <option value="منحة دراسية">ابتعاث أو منحة دراسية</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2 flex items-end">
+                            <button onclick="generateCustomCandidateLink()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2.5 px-4 rounded-lg shadow transition flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <span>توليد رابط مخصص للاستخدام الفردي (مرة واحدة)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="generated-link-box" class="hidden bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col md:flex-row justify-between items-center gap-3">
+                        <div class="w-full overflow-hidden truncate font-mono text-xs text-emerald-400 text-left md:pr-2" id="generated-url-text"></div>
+                        <button onclick="copyGeneratedLink()" class="w-full md:w-auto shrink-0 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-xs px-4 py-2 rounded-lg flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-copy"></i>
+                            <span id="copy-btn-lbl">نسخ الرابط</span>
+                        </button>
+                    </div>
+                </div>
+
+                <form id="survey-form" onsubmit="handleFormSubmit(event)" class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+                    <div>
+                        <h3 id="f-block1-title" class="text-md font-bold text-emerald-700 border-b pb-2 mb-4"><i class="fa-solid fa-address-card"></i> أو إدخال البيانات نظامياً من قِبل الموظف المختص</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label id="f-lbl-name" class="block text-sm font-semibold mb-1 text-gray-600">الاسم الرباعي</label>
+                                <input type="text" required id="f-name" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label id="f-lbl-id" class="block text-sm font-semibold mb-1 text-gray-600">رقم الهوية الوطنية / الإقامة</label>
+                                <input type="text" required id="f-national-id" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label id="f-lbl-job" class="block text-sm font-semibold mb-1 text-gray-600">المسمى الوظيفي / الأكاديمي</label>
+                                <input type="text" required id="f-job" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 id="f-block2-title" class="text-md font-bold text-emerald-700 border-b pb-2 mb-4"><i class="fa-solid fa-share-nodes"></i> حسابات وروابط الأدلة الرقمية للمرشح</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-600">أدخل الروابط المباشرة المراد فحصها (رابط واحد في كل سطر)</label>
+                                <textarea id="f-links" rows="4" placeholder="https://x.com/username&#10;https://facebook.com/profile-id" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-left placeholder:text-right placeholder:md:text-left"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 id="f-block3-title" class="text-md font-bold text-emerald-700 border-b pb-2 mb-4"><i class="fa-solid fa-circle-info"></i> الغرض والمسوغات</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label id="f-lbl-purpose" class="block text-sm font-semibold mb-1 text-gray-600">الغرض من المسح الفكري</label>
+                                <select id="f-purpose" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500">
+                                    <option value="تعيين" id="opt-p1">تعيين أكاديمي / إداري</option>
+                                    <option value="ترقية" id="opt-p2">ترقية علمية / وظيفية</option>
+                                    <option value="منصب قيادي" id="opt-p3">تكليف بمنصب قيادي</option>
+                                    <option value="منحة دراسية" id="opt-p4">ابتعاث أو منحة دراسية</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition cursor-pointer flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span id="f-btn-submit">إرسال الطلب إلكترونياً للجهة المختصة</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="sect-analysis" class="tab-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 id="ai-title" class="text-2xl font-bold text-gray-800">لوحة الفحص والتدقيق المستقل</h2>
+                        <p id="ai-subtitle" class="text-sm text-gray-500">مراجعة تنظيمية شاملة للحسابات الرقمية والأدلة المسجلة للتحقق من سلامة المحتوى المنشور ونفي الشبهات</p>
+                    </div>
+                    <button onclick="previewAndPrintReport()" class="bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl shadow font-semibold text-sm flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-print"></i>
+                        <span>طباعة تقرير الحالة الفردي</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 xl:col-span-1 space-y-4">
+                        <h3 id="ai-case-lbl" class="text-md font-bold text-slate-800 border-b pb-2"><i class="fa-solid fa-fingerprint text-emerald-600"></i> الملف الخاضع للتحقق والتدقيق النظامي</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <span id="ai-lbl-name" class="text-xs text-gray-400 block">اسم المرشح</span>
+                                <p id="ai-curr-name" class="font-semibold text-gray-700">-</p>
+                            </div>
+                            <div>
+                                <span id="ai-lbl-job" class="text-xs text-gray-400 block">الوظيفة / الغرض</span>
+                                <p id="ai-curr-job" class="text-sm text-gray-600">-</p>
+                            </div>
+                            <div>
+                                <span class="text-xs text-amber-600 font-bold block mb-2"><i class="fa-solid fa-link"></i> الروابط والأدلة الرقمية المرفقة</span>
+                                <div id="manual-links-container" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button onclick="openAllArtifacts()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium p-2.5 rounded-xl text-xs transition flex justify-center items-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                <span>فتح جميع الروابط المعروضة في متصفحك</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 xl:col-span-2 space-y-6">
+                        <h3 id="ai-edit-lbl" class="text-md font-bold text-slate-800 border-b pb-2"><i class="fa-solid fa-square-poll-horizontal text-emerald-600"></i> رصد النتائج وتقييم المؤشرات الفكرية</h3>
+                        
+                        <div class="space-y-4">
+                            <label class="block text-sm font-bold text-gray-700 bg-gray-50 p-2 rounded border border-gray-100">حدد كافة المخالفات المرصودة مع توثيق روابط إثباتاتها بشكل مستقل لكل نوع:</label>
+                            
+                            <div class="space-y-3 p-4 bg-slate-50/50 rounded-xl border border-gray-200">
+                                <div class="flex flex-col md:flex-row md:items-center gap-3 pb-3 border-b border-gray-200/60">
+                                    <label class="flex items-center gap-2 md:w-1/3 shrink-0 cursor-pointer font-semibold text-sm">
+                                        <input type="checkbox" id="chk-cat-1" value="ما يمس أمن الدولة ووحدة المجتمع" onchange="autoCalculateRisk()" class="w-4 h-4 text-emerald-600 rounded">
+                                        <span>أمن الدولة ووحدة المجتمع</span>
+                                    </label>
+                                    <input type="text" id="link-cat-1" placeholder="رابط إثبات المخالفة الأولى..." class="w-full p-2 text-xs rounded border border-gray-300 text-left">
+                                </div>
+                                <div class="flex flex-col md:flex-row md:items-center gap-3 pb-3 border-b border-gray-200/60">
+                                    <label class="flex items-center gap-2 md:w-1/3 shrink-0 cursor-pointer font-semibold text-sm">
+                                        <input type="checkbox" id="chk-cat-2" value="التطرف والانحراف الفكري" onchange="autoCalculateRisk()" class="w-4 h-4 text-emerald-600 rounded">
+                                        <span>التطرف والانحراف الفكري</span>
+                                    </label>
+                                    <input type="text" id="link-cat-2" placeholder="رابط إثبات المخالفة الثانية..." class="w-full p-2 text-xs rounded border border-gray-300 text-left">
+                                </div>
+                                <div class="flex flex-col md:flex-row md:items-center gap-3 pb-3 border-b border-gray-200/60">
+                                    <label class="flex items-center gap-2 md:w-1/3 shrink-0 cursor-pointer font-semibold text-sm">
+                                        <input type="checkbox" id="chk-cat-3" value="الأمن السيبراني والجرائم المعلوماتية" onchange="autoCalculateRisk()" class="w-4 h-4 text-emerald-600 rounded">
+                                        <span>الجرائم المعلوماتية والسيبرانية</span>
+                                    </label>
+                                    <input type="text" id="link-cat-3" placeholder="رابط إثبات المخالفة الثالثة..." class="w-full p-2 text-xs rounded border border-gray-300 text-left">
+                                </div>
+                                <div class="flex flex-col md:flex-row md:items-center gap-3">
+                                    <label class="flex items-center gap-2 md:w-1/3 shrink-0 cursor-pointer font-semibold text-sm">
+                                        <input type="checkbox" id="chk-cat-4" value="الشائعات والتضليل الإعلامي" onchange="autoCalculateRisk()" class="w-4 h-4 text-emerald-600 rounded">
+                                        <span>الشائعات والتضليل الإعلامي</span>
+                                    </label>
+                                    <input type="text" id="link-cat-4" placeholder="رابط إثبات المخالفة الرابعة..." class="w-full p-2 text-xs rounded border border-gray-300 text-left">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label id="ai-lbl-desc" class="block text-sm font-semibold mb-1 text-gray-600">التقرير النهائي للمراجع المتخصص والملاحظات بالتفصيل</label>
+                            <textarea id="ai-notes" rows="3" placeholder="يرجى كتابة تفاصيل نتائج الفحص النظامي المستقل والأدلة المحققة هنا..." class="w-full p-2.5 rounded-lg border border-gray-300"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl border border-gray-200">
+                            <div>
+                                <label id="ai-lbl-risk" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">درجة الخطورة المحتسبة حوكمياً</label>
+                                <div id="ai-risk-badge" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span id="ai-risk-text">منخفض</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label id="ai-lbl-action" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">الإجراء التنفيذي المقترح</label>
+                                <select id="ai-action" class="w-full p-2 rounded-lg border border-gray-300 bg-white font-medium text-sm">
+                                    <option value="لا توجد ملاحظات">لا توجد ملاحظات</option>
+                                    <option value="حفظ وإغلاق">حفظ وإغلاق</option>
+                                    <option value="متابعة دورية">متابعة دورية</option>
+                                    <option value="إحالة للجهة المختصة">إحالة للجهة المختصة</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button onclick="saveAnalysisResult()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl shadow transition cursor-pointer flex items-center gap-2">
+                                <i class="fa-solid fa-box-archive"></i>
+                                <span id="ai-btn-save">اعتماد وثيقة الفحص وأرشفة المعاملة</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sect-archive" class="tab-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 id="arch-title" class="text-2xl font-bold text-gray-800">أرشيف الحالات وقاعدة البيانات المركزية</h2>
+                        <p id="arch-subtitle" class="text-sm text-gray-500">حفظ السجلات إلكترونياً، تتبع الإجراءات، وضمان حوكمة وتوثيق البيانات للجامعة</p>
+                    </div>
+                    <div class="w-full md:w-64">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="archive-search" oninput="filterArchiveTable()" placeholder="بحث بالاسم أو رقم الهوية..." class="w-full pr-9 pl-3 py-2 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-200 text-sm font-semibold">
+                                    <th class="p-4" id="th-name">اسم المرشح والبيانات</th>
+                                    <th class="p-4" id="th-purpose">الغرض</th>
+                                    <th class="p-4" id="th-cat">التصنيفات المرصودة</th>
+                                    <th class="p-4" id="th-risk">مستوى الخطورة</th>
+                                    <th class="p-4" id="th-action">الإجراء المتخذ</th>
+                                    <th class="p-4" id="th-date">تاريخ الرصد</th>
+                                    <th class="p-4 text-center" id="th-ctrl">التحكم والطباعة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archive-table-body" class="text-sm divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                    <div id="empty-archive-msg" class="hidden p-8 text-center text-gray-400">
+                        <i class="fa-solid fa-folder-open text-4xl mb-2 block"></i>
+                        <span id="msg-no-data">لا توجد سجلات مؤرشفة في الوقت الحالي.</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="report-modal-layer" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2"><i class="fa-solid fa-file-invoice text-emerald-400"></i> معاينة تقرير الفحص قبل الطباعة</h3>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="flex-1 p-6 overflow-y-auto bg-white" id="modal-print-container">
+                <div id="printable-report-card" class="border-4 border-double border-slate-700 p-6 space-y-6 bg-white text-gray-900 text-right">
+                    <div class="flex justify-between items-center border-b-2 border-slate-400 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">المملكة العربية السعودية</h2>
+                            <h3 class="text-md font-semibold text-gray-700">وزارة التعليم - جامعة جازان</h3>
+                            <p class="text-xs text-gray-500">إدارة التدقيق والتحقق الرقمي المستقل</p>
+                        </div>
+                        <div class="text-center bg-slate-100 px-4 py-2 rounded border border-slate-300">
+                            <span class="text-sm font-bold tracking-wider text-slate-800">تقرير وثيقة الفحص الحوكمي</span>
+                            <p class="text-[10px] text-gray-400 mt-1 font-mono" id="print-report-date"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-md text-slate-800 bg-slate-100 p-1.5 rounded"><i class="fa-solid fa-id-card"></i> أولاً: البيانات التعريفية للمرشح</h4>
+                        <div class="grid grid-cols-2 gap-4 text-sm p-2">
+                            <div><strong>الاسم الكامل:</strong> <span id="p-rpt-name" class="text-gray-800"></span></div>
+                            <div><strong>رقم الهوية/الإقامة:</strong> <span id="p-rpt-id" class="font-mono text-gray-800"></span></div>
+                            <div><strong>المسمى الوظيفي:</strong> <span id="p-rpt-job" class="text-gray-800"></span></div>
+                            <div><strong>الغرض من المعاملة:</strong> <span id="p-rpt-purpose" class="text-gray-800"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-md text-slate-800 bg-slate-100 p-1.5 rounded"><i class="fa-solid fa-triangle-exclamation"></i> ثانياً: رصد المخالفات والروابط التوثيقية المعتمدة</h4>
+                        <div id="p-rpt-categories-list" class="text-sm space-y-2 p-2"></div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-md text-slate-800 bg-slate-100 p-1.5 rounded"><i class="fa-solid fa-paste"></i> ثالثاً: الملاحظات العامة ونتائج التدقيق</h4>
+                        <p id="p-rpt-desc" class="text-sm text-gray-700 p-2 leading-relaxed bg-gray-50 rounded border border-dashed"></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 pt-4 text-sm font-bold">
+                        <div class="p-3 bg-slate-50 border rounded text-center">مستوى الخطورة النهائي: <span id="p-rpt-risk" class="underline"></span></div>
+                        <div class="p-3 bg-slate-50 border rounded text-center">الإجراء التنفيذي الموصى به: <span id="p-rpt-action" class="underline"></span></div>
+                    </div>
+
+                    <div class="pt-12 flex justify-between text-xs text-gray-400 font-mono border-t border-gray-200">
+                        <span>توقيع اللجنة المختصة</span>
+                        <span>منصة الحوكمة الرقمية الذكية V2.7</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-gray-50 border-t flex justify-end gap-2">
+                <button onclick="closeReportModal()" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition">إلغاء</button>
+                <button onclick="triggerSystemPrint()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-xl text-sm flex items-center gap-2 shadow transition">
+                    <i class="fa-solid fa-print"></i> أمر الطباعة النهائي
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'ar';
+        let selectedCaseIndex = null;
+        let publicTokensRegistry = {};
+
+        let casesDatabase = [
+            { 
+                id: "1035434656", 
+                name: "علي احمد صيري", 
+                job: "أستاذ مساعد", 
+                links: ["https://x.com/Mansour__Haneen", "https://www.linkedin.com/in/mansour-haneen/"],
+                purpose: "تعيين", 
+                categories: ["لا يوجد"],
+                evidenceLinks: {},
+                description: "بعد المراجعة المنهجية والتحقق النظامي لكافة المعطيات الرقمية المرفقة، تبين سلامة المحتوى وخلوه من أي محاذير فكرية تنظيمية.", 
+                risk: "منخفض", 
+                action: "لا توجد ملاحظات", 
+                date: "2026-05-15" 
+            },
+            { 
+                id: "1111435454", 
+                name: "منصور بن علي عبده حنين", 
+                job: "محاضر", 
+                links: ["https://x.com/Mansour__Haneen", "https://www.linkedin.com/in/mansour-haneen/"],
+                purpose: "ترقية", 
+                categories: ["الشائعات والتضليل الإعلامي"],
+                evidenceLinks: {"الشائعات والتضليل الإعلامي": "https://x.com/Mansour__Haneen/status/1861871597566460023?s=20"},
+                description: "تم الفحص والتحقق وتبين رصد قيام صاحب الحساب بمشاركة تدوينات تحتوي على إحصاءات مغلوطة وشائعات عامة تمس التنظيم الداخلي.", 
+                risk: "متوسط", 
+                action: "متابعة دورية", 
+                date: "2026-05-20" 
+            }
+        ];
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+
+            if(token) {
+                initiatePublicCandidateView(token);
+            } else {
+                updateDashboardStats();
+                renderArchiveTable();
+                if(casesDatabase.length > 0) loadCaseForAnalysis(0);
+            }
+        };
+
+        function initiatePublicCandidateView(token) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('user-profile-nav').classList.add('hidden');
+            document.getElementById('public-candidate-portal').classList.remove('hidden');
+            
+            const registryItem = publicTokensRegistry[token];
+            
+            if(!registryItem) {
+                publicTokensRegistry[token] = { purpose: "تعيين أكاديمي / إداري", submitted: false };
+                document.getElementById('public-form-container').classList.remove('hidden');
+                document.getElementById('public-lock-message').classList.add('hidden');
+                document.getElementById('p-purpose').value = publicTokensRegistry[token].purpose;
+            } else if (registryItem && !registryItem.submitted) {
+                document.getElementById('public-form-container').classList.remove('hidden');
+                document.getElementById('public-lock-message').classList.add('hidden');
+                document.getElementById('p-purpose').value = registryItem.purpose;
+            } else {
+                document.getElementById('public-form-container').classList.add('hidden');
+                document.getElementById('public-lock-message').classList.remove('hidden');
+            }
+        }
+
+        function generateCustomCandidateLink() {
+            const purposeValue = document.getElementById('gen-purpose').value;
+            const randomId = "tk_" + Math.random().toString(36).substring(2, 12);
+            
+            publicTokensRegistry[randomId] = { purpose: purposeValue, submitted: false };
+            
+            const baseUrl = window.location.href.split('?')[0];
+            const fullGeneratedUrl = `${baseUrl}?token=${randomId}`;
+            
+            document.getElementById('generated-url-text').innerText = fullGeneratedUrl;
+            document.getElementById('generated-link-box').classList.remove('hidden');
+            
+            const btnLabel = document.getElementById('copy-btn-lbl');
+            btnLabel.innerText = currentLang === 'ar' ? "نسخ الرابط" : "Copy Link";
+        }
+
+        function copyGeneratedLink() {
+            const linkText = document.getElementById('generated-url-text').innerText;
+            navigator.clipboard.writeText(linkText).then(() => {
+                const btnLabel = document.getElementById('copy-btn-lbl');
+                btnLabel.innerText = currentLang === 'ar' ? "تم النسخ بنجاح!" : "Copied!";
+            });
+        }
+
+        function handlePublicFormSubmit(e) {
+            e.preventDefault();
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+
+            if(!token || !publicTokensRegistry[token] || publicTokensRegistry[token].submitted) {
+                alert(currentLang === 'ar' ? 'فشلت العملية. انتهت صلاحية الرابط حوكمياً.' : 'Submission failed. Link expired.');
+                return;
+            }
+
+            const rawLinks = document.getElementById('p-links').value;
+            const parsedLinks = rawLinks.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+            const receivedCase = {
+                id: document.getElementById('p-national-id').value,
+                name: document.getElementById('p-name').value,
+                job: document.getElementById('p-job').value,
+                links: parsedLinks.length > 0 ? parsedLinks : ["غير متوفر"],
+                purpose: publicTokensRegistry[token].purpose,
+                categories: ["لا يوجد"],
+                evidenceLinks: {},
+                description: "بيانات مستلمة خارجياً عبر الرابط المخصص للمرشح، بانتظار التدقيق والمراجعة التنظيمية المستقلة.",
+                risk: "منخفض",
+                action: "لا توجد ملاحظات",
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            casesDatabase.unshift(receivedCase);
+            publicTokensRegistry[token].submitted = true;
+
+            document.getElementById('public-form-container').classList.add('hidden');
+            document.getElementById('public-lock-message').classList.remove('hidden');
+
+            alert(currentLang === 'ar' ? 'تم إرسال بياناتك بنجاح للجهة الإدارية وجرى قفل المعاملة.' : 'Your details have been submitted and this token is now locked.');
+        }
+
+        function login() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('user-profile-nav').classList.remove('hidden');
+            
+            updateDashboardStats();
+            renderArchiveTable();
+            if(casesDatabase.length > 0) loadCaseForAnalysis(0);
+            
+            switchTab('dashboard');
+        }
+
+        function logout() {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.pushState({path:cleanUrl}, '', cleanUrl);
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('public-candidate-portal').classList.add('hidden');
+            document.getElementById('user-profile-nav').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+        }
+
+        function onRoleChange() {
+            const role = document.getElementById('login-role').value;
+            const idField = document.getElementById('login-id');
+            if(role !== 'auth_auth') idField.value = "user_jazanu";
+            else idField.value = "admin_jazanu";
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-emerald-600', 'text-white', 'font-medium');
+                el.classList.add('hover:bg-slate-800', 'hover:text-white');
+            });
+
+            document.getElementById('sect-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-btn-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-emerald-600', 'text-white', 'font-medium');
+                activeBtn.classList.remove('hover:bg-slate-800', 'hover:text-white');
+            }
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const rawLinks = document.getElementById('f-links').value;
+            const parsedLinks = rawLinks.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+            const newCase = {
+                id: document.getElementById('f-national-id').value,
+                name: document.getElementById('f-name').value,
+                job: document.getElementById('f-job').value,
+                links: parsedLinks.length > 0 ? parsedLinks : ["غير متوفر"],
+                purpose: document.getElementById('f-purpose').value,
+                categories: ["لا يوجد"],
+                evidenceLinks: {},
+                description: "تم تسجيل المعاملة نظامياً من الموظف. بانتظار التدقيق المستقل.",
+                risk: "منخفض",
+                action: "لا توجد ملاحظات",
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            casesDatabase.unshift(newCase);
+            updateDashboardStats();
+            renderArchiveTable();
+            loadCaseForAnalysis(0);
+            
+            alert(currentLang === 'ar' ? 'تم تسجيل المعاملة بنجاح وهي جاهزة للتدقيق!' : 'Case registered successfully!');
+            document.getElementById('survey-form').reset();
+            switchTab('analysis');
+        }
+
+        function loadCaseForAnalysis(index) {
+            selectedCaseIndex = index;
+            const item = casesDatabase[index];
+            document.getElementById('ai-curr-name').innerText = item.name;
+            document.getElementById('ai-curr-job').innerText = `${item.job} | ${item.purpose}`;
+            
+            let linksHtml = '';
+            if (item.links && item.links.length > 0 && item.links[0] !== "غير متوفر") {
+                item.links.forEach((url) => {
+                    linksHtml += `
+                        <a href="${url}" target="_blank" class="block bg-slate-50 hover:bg-emerald-50 text-emerald-700 font-mono text-xs p-2 rounded border border-gray-200 transition truncate flex items-center justify-between">
+                            <span><i class="fa-solid fa-hashtag text-slate-400"></i> ${url}</span>
+                            <i class="fa-solid fa-up-right-from-square text-gray-400"></i>
+                        </a>`;
+                });
+            } else {
+                linksHtml = `<p class="text-xs text-gray-400 italic py-2">لا توجد روابط مسجلة لهذه المعاملة</p>`;
+            }
+            document.getElementById('manual-links-container').innerHTML = linksHtml;
+
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`chk-cat-${i}`).checked = false;
+                document.getElementById(`link-cat-${i}`).value = "";
+            }
+
+            if(item.categories && !item.categories.includes("لا يوجد")) {
+                item.categories.forEach(cat => {
+                    if(cat === "ما يمس أمن الدولة ووحدة المجتمع") { document.getElementById('chk-cat-1').checked = true; document.getElementById('link-cat-1').value = item.evidenceLinks[cat] || ""; }
+                    if(cat === "التطرف والانحراف الفكري") { document.getElementById('chk-cat-2').checked = true; document.getElementById('link-cat-2').value = item.evidenceLinks[cat] || ""; }
+                    if(cat === "الأمن السيبراني والجرائم المعلوماتية") { document.getElementById('chk-cat-3').checked = true; document.getElementById('link-cat-3').value = item.evidenceLinks[cat] || ""; }
+                    if(cat === "الشائعات والتضليل الإعلامي") { document.getElementById('chk-cat-4').checked = true; document.getElementById('link-cat-4').value = item.evidenceLinks[cat] || ""; }
+                });
+            }
+            
+            document.getElementById('ai-notes').value = item.description;
+            autoCalculateRisk();
+        }
+
+        function openAllArtifacts() {
+            if(selectedCaseIndex === null) return;
+            const item = casesDatabase[selectedCaseIndex];
+            if(item.links && item.links.length > 0 && item.links[0] !== "غير متوفر") {
+                item.links.forEach(url => window.open(url, '_blank'));
+            }
+        }
+
+        function autoCalculateRisk() {
+            const riskBadge = document.getElementById('ai-risk-badge');
+            const riskText = document.getElementById('ai-risk-text');
+            const actionSelect = document.getElementById('ai-action');
+
+            let maxWeight = 0;
+            if(document.getElementById('chk-cat-1').checked || document.getElementById('chk-cat-2').checked) maxWeight = 3;
+            else if(document.getElementById('chk-cat-3').checked) maxWeight = 2;
+            else if(document.getElementById('chk-cat-4').checked) maxWeight = 1;
+
+            let risk = "منخفض"; let action = "لا توجد ملاحظات";
+
+            if (maxWeight === 3) { risk = "مرتفع جداً"; action = "إحالة للجهة المختصة"; }
+            else if (maxWeight === 2) { risk = "مرتفع"; action = "إحالة للجهة المختصة"; }
+            else if (maxWeight === 1) { risk = "متوسط"; action = "متابعة دورية"; }
+            else { risk = "منخفض"; action = "حفظ وإغلاق"; }
+
+            riskText.innerText = risk;
+            riskBadge.className = "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border ";
+            if(risk === "منخفض") riskBadge.classList.add('bg-emerald-100', 'text-emerald-800', 'border-emerald-300');
+            else if(risk === "متوسط") riskBadge.classList.add('bg-amber-100', 'text-amber-800', 'border-amber-300');
+            else riskBadge.classList.add('bg-rose-100', 'text-rose-800', 'border-rose-300');
+
+            actionSelect.value = action;
+        }
+
+        function saveAnalysisResult() {
+            if(selectedCaseIndex === null) return;
+            
+            let selectedCategories = [];
+            let evidenceMap = {};
+
+            for(let i=1; i<=4; i++) {
+                const chk = document.getElementById(`chk-cat-${i}`);
+                if(chk.checked) {
+                    selectedCategories.push(chk.value);
+                    evidenceMap[chk.value] = document.getElementById(`link-cat-${i}`).value;
+                }
+            }
+
+            if(selectedCategories.length === 0) {
+                selectedCategories.push("لا يوجد");
+            }
+
+            casesDatabase[selectedCaseIndex].categories = selectedCategories;
+            casesDatabase[selectedCaseIndex].evidenceLinks = evidenceMap;
+            casesDatabase[selectedCaseIndex].description = document.getElementById('ai-notes').value;
+            casesDatabase[selectedCaseIndex].action = document.getElementById('ai-action').value;
+            casesDatabase[selectedCaseIndex].risk = document.getElementById('ai-risk-text').innerText;
+
+            updateDashboardStats();
+            renderArchiveTable();
+            alert('تم اعتماد وثيقة التدقيق وإرسال السجل للأرشيف المركزي للجامعة.');
+            switchTab('archive');
+        }
+
+        function previewAndPrintReport(indexFromArchive = null) {
+            let index = indexFromArchive !== null ? indexFromArchive : selectedCaseIndex;
+            if(index === null) {
+                alert('الرجاء اختيار ملف مرشح أولاً لتوليد وثيقة المعاينة.');
+                return;
+            }
+            
+            const target = casesDatabase[index];
+            document.getElementById('print-report-date').innerText = "تاريخ التقرير: " + new Date().toLocaleDateString('ar-SA');
+            document.getElementById('p-rpt-name').innerText = target.name;
+            document.getElementById('p-rpt-id').innerText = target.id;
+            document.getElementById('p-rpt-job').innerText = target.job;
+            document.getElementById('p-rpt-purpose').innerText = target.purpose;
+            document.getElementById('p-rpt-desc').innerText = target.description;
+            document.getElementById('p-rpt-risk').innerText = target.risk;
+            document.getElementById('p-rpt-action').innerText = target.action;
+
+            let categoriesHtml = '';
+            if(target.categories && target.categories[0] !== "لا يوجد") {
+                target.categories.forEach(cat => {
+                    const linkedEvidence = target.evidenceLinks[cat] ? target.evidenceLinks[cat] : "لم يتم إرفاق رابط إثبات مخصص";
+                    categoriesHtml += `<div class="p-2 bg-rose-50 border border-rose-200 rounded text-right" style="direction: rtl;">
+                        <strong>نوع المؤشر المرصود:</strong> ${cat} <br/> 
+                        <span class="text-xs text-slate-500 font-mono">رابط التوثيق المحدد للمخالفة: ${linkedEvidence}</span>
+                    </div>`;
+                });
+            } else {
+                categoriesHtml = `<p class="text-emerald-700 font-bold" style="direction: rtl;"><i class="fa-solid fa-circle-check"></i> سليم - خالي من أي ملاحظات أو مؤشرات فكرية مرصودة.</p>`;
+            }
+            document.getElementById('p-rpt-categories-list').innerHTML = categoriesHtml;
+
+            document.getElementById('report-modal-layer').classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal-layer').classList.add('hidden');
+        }
+
+        /* Fixed: Using dynamic clean iframe injection pattern to bypass browser layout nesting bug */
+        function triggerSystemPrint() {
+            // 1. Target the raw inner layout markup card
+            const reportMarkup = document.getElementById('printable-report-card').innerHTML;
+            
+            // 2. Build or hook an isolated runtime frame to execute clean rendering scope 
+            let printIframe = document.getElementById('secure-print-frame');
+            if (!printIframe) {
+                printIframe = document.createElement('iframe');
+                printIframe.id = 'secure-print-frame';
+                // Hidden visually but present inside DOM structure to satisfy modern layout compilers
+                printIframe.style.position = 'absolute';
+                printIframe.style.top = '-9999px';
+                printIframe.style.left = '-9999px';
+                printIframe.style.width = '100%';
+                document.body.appendChild(printIframe);
+            }
+            
+            const frameDoc = printIframe.contentWindow.document || printIframe.contentDocument;
+            
+            // 3. Populate structure with necessary style layers explicitly passed down
+            frameDoc.open();
+            frameDoc.write(`
+                <!DOCTYPE html>
+                <html lang="ar" dir="rtl">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Print Document</title>
+                    <script src="https://cdn.tailwindcss.com"><\/script>
+                    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+                    <style>
+                        body { 
+                            font-family: 'Cairo', sans-serif; 
+                            background-color: white !important; 
+                            color: black !important;
+                            padding: 20px;
+                        }
+                        @page { size: auto; margin: 15mm; }
+                    </style>
+                </head>
+                <body>
+                    <div class="w-full text-right" style="direction: rtl;">
+                        ${reportMarkup}
+                    </div>
+                    <script>
+                        // Execute printing sequence only after assets compile cleanly inside execution thread
+                        window.addEventListener('DOMContentLoaded', () => {
+                            setTimeout(() => {
+                                window.focus();
+                                window.print();
+                            }, 400);
+                        });
+                    <\/script>
+                </body>
+                </html>
+            `);
+            frameDoc.close();
+        }
+
+        function updateDashboardStats() {
+            const total = casesDatabase.length;
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-clean').innerText = casesDatabase.filter(c => c.risk === 'منخفض').length;
+            document.getElementById('stat-pending').innerText = casesDatabase.filter(c => c.risk === 'متوسط').length;
+            document.getElementById('stat-critical').innerText = casesDatabase.filter(c => c.risk.includes('مرتفع')).length;
+
+            document.getElementById('count-vhigh').innerText = casesDatabase.filter(c => c.risk === 'مرتفع جداً').length;
+            document.getElementById('count-high').innerText = casesDatabase.filter(c => c.risk === 'مرتفع').length;
+            document.getElementById('count-mid').innerText = casesDatabase.filter(c => c.risk === 'متوسط').length;
+            document.getElementById('count-low').innerText = casesDatabase.filter(c => c.risk === 'منخفض').length;
+
+            for(let i=1; i<=4; i++) {
+                let categoryName = ["", "ما يمس أمن الدولة ووحدة المجتمع", "التطرف والانحراف الفكري", "الأمن السيبراني والجرائم المعلوماتية", "الشائعات والتضليل الإعلامي"][i];
+                const catCount = casesDatabase.filter(c => c.categories && c.categories.includes(categoryName)).length;
+                const percentage = total > 0 ? Math.round((catCount / total) * 100) : 0;
+                const barEl = document.getElementById(`bar-${i}`);
+                if(barEl) barEl.style.width = percentage + "%";
+                const barVEl = document.getElementById(`bar-v${i}`);
+                if(barVEl) barVEl.innerText = percentage + "%";
+            }
+        }
+
+        function renderArchiveTable(recordsToDisplay = null) {
+            const tbody = document.getElementById('archive-table-body');
+            tbody.innerHTML = '';
+            const records = recordsToDisplay || casesDatabase;
+
+            if(records.length === 0) {
+                document.getElementById('empty-archive-msg').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('empty-archive-msg').classList.add('hidden');
+
+            records.forEach((item, index) => {
+                let riskColorClass = item.risk === "منخفض" ? "bg-emerald-100 text-emerald-800" : item.risk === "متوسط" ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800";
+                let displayCategories = item.categories ? item.categories.join('، ') : "لا يوجد";
+                
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-gray-100";
+                tr.innerHTML = `
+                    <td class="p-4">
+                        <div class="font-bold text-gray-800">${item.name}</div>
+                        <div class="text-xs text-gray-400 font-mono">${item.id} | ${item.job}</div>
+                    </td>
+                    <td class="p-4 text-gray-600 font-medium">${item.purpose}</td>
+                    <td class="p-4 text-xs text-gray-500 max-w-xs truncate" title="${displayCategories}">${displayCategories}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${riskColorClass}">${item.risk}</span></td>
+                    <td class="p-4 text-slate-700 font-medium text-xs">${item.action}</td>
+                    <td class="p-4 text-gray-400 text-xs font-mono">${item.date}</td>
+                    <td class="p-4 text-center flex items-center justify-center gap-2">
+                        <button onclick="routeToAnalyze(${index})" class="text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded text-xs font-bold transition cursor-pointer">فحص ومراجعة</button>
+                        <button onclick="previewAndPrintReport(${index})" class="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 p-1 rounded text-xs transition cursor-pointer" title="طباعة التقرير"><i class="fa-solid fa-print"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function routeToAnalyze(idx) {
+            loadCaseForAnalysis(idx);
+            switchTab('analysis');
+        }
+
+        function filterArchiveTable() {
+            const query = document.getElementById('archive-search').value.toLowerCase();
+            const filtered = casesDatabase.filter(c => c.name.toLowerCase().includes(query) || c.id.includes(query));
+            renderArchiveTable(filtered);
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            const htmlTag = document.documentElement;
+            
+            if (currentLang === 'en') {
+                htmlTag.setAttribute('lang', 'en'); htmlTag.setAttribute('dir', 'ltr');
+                document.body.classList.add('en-mode');
+                document.getElementById('lang-toggle').innerHTML = `<i class="fa-solid fa-globe"></i> <span>العربية</span>`;
+            } else {
+                htmlTag.setAttribute('lang', 'ar'); htmlTag.setAttribute('dir', 'rtl');
+                document.body.classList.remove('en-mode');
+                document.getElementById('lang-toggle').innerHTML = `<i class="fa-solid fa-globe"></i> <span>English</span>`;
+            }
+            translateUI();
+        }
+
+        function translateUI() {
+            const t = dictionary[currentLang];
+            document.getElementById('app-title').innerText = t.appTitle;
+            document.getElementById('app-subtitle').innerText = t.appSubtitle;
+            document.getElementById('login-title').innerText = t.loginTitle;
+            document.getElementById('login-desc').innerText = t.loginDesc;
+            document.getElementById('lbl-role').innerText = t.lblRole;
+            document.getElementById('lbl-uid').innerText = t.lblUid;
+            document.getElementById('lbl-pwd').innerText = t.lblPwd;
+            document.getElementById('btn-login').innerText = t.btnLogin;
+            document.getElementById('m-dash').innerText = t.mDash;
+            document.getElementById('m-survey').innerText = t.mSurvey;
+            document.getElementById('m-ai').innerText = t.mAi;
+            document.getElementById('m-archive').innerText = t.mArchive;
+            document.getElementById('system-status').innerText = t.statusActive;
+            document.getElementById('dash-title').innerText = t.dashTitle;
+            document.getElementById('dash-subtitle').innerText = t.dashSubtitle;
+            document.getElementById('form-title').innerText = t.formTitle;
+            document.getElementById('form-subtitle').innerText = t.formSubtitle;
+            document.getElementById('arch-title').innerText = t.archTitle;
+            document.getElementById('arch-subtitle').innerText = t.archSubtitle;
+            renderArchiveTable();
+            updateDashboardStats();
+        }
+
+        const dictionary = {
+            ar: {
+                appTitle: "منصة الرصد الفكري الرقمي",
+                appSubtitle: "جامعة جازان - إدارة المراجعة والتحقق النظامي المستقل",
+                loginTitle: "بوابة الدخول الموحدة", loginDesc: "الهوية الرقمية للجامعة",
+                btnLogin: "تسجيل الدخول الآمن", mDash: "المؤشرات والتقارير", mSurvey: "نموذج المسح الفكري",
+                mAi: "لوحة الفحص والتدقيق", mArchive: "أرشيف الحالات", statusActive: "نظام المراجعة النظامية نشط",
+                dashTitle: "لوحة الإحصاءات والمؤشرات التفاعلية", dashSubtitle: "متابعة فورية ومؤشرات لدعم اتخاذ القرار المبني على البيانات",
+                formTitle: "قسم نماذج المسح الفكري الإلكترونية", formSubtitle: "إدخال البيانات المباشر أو إنشاء روابط خارجية مخصصة للمستهدفين لتعبئتها بأنفسهم لمرة واحدة",
+                archTitle: "أرشيف الحالات وقاعدة البيانات المركزية", archSubtitle: "حفظ السجلات إلكترونياً، تتبع الإجراءات، وضمان حوكمة وتوثيق البيانات للجامعة"
+            },
+            en: {
+                appTitle: "Intellect Digital Screening Platform",
+                appSubtitle: "Jazan University - Regulatory Verification & Independent Audit Unit",
+                loginTitle: "Unified Gateway Login", loginDesc: "University Digital Identity",
+                lblRole: "Digital Identity Type", lblUid: "Username / Academic ID", lblPwd: "Password",
+                btnLogin: "Secure Login", mDash: "Indicators & Dashboard", mSurvey: "Intellectual Screening Form",
+                mAi: "Specialized Audit & Review Board", mArchive: "Cases Archive", statusActive: "Regulatory Audit System Active",
+                dashTitle: "Interactive Statistics & Indicators Board", dashSubtitle: "Real-time monitoring and indicators to support data-driven decision making",
+                formTitle: "Electronic Intellectual Survey Department", formSubtitle: "Direct data entry or generating secure single-use links for candidates to input information",
+                archTitle: "Centralized Cases Archive & Database", archSubtitle: "Electronic record preservation, action tracking, ensuring university governance and data documentation"
+            }
+        };
+    </script>
+</body>
+</html>
